@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>대건고 정기모임 관리 시스템 | 참석·회비 집계</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Noto Sans KR', 'Roboto', sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            margin: 0;
+            padding: 24px 16px;
+            color: #1e2a3a;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            padding: 20px 24px 32px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            background: linear-gradient(135deg, #1f5e3a, #2b7a4b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .sub {
+            color: #4a627a;
+            border-left: 4px solid #2b7a4b;
+            padding-left: 14px;
+            margin: 8px 0 20px 0;
+            font-weight: 500;
+        }
+        /* 상단 컨트롤 패널 */
+        .control-panel {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin-bottom: 28px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e2edf2;
+        }
+        .meeting-section {
+            flex: 3;
+            min-width: 220px;
+        }
+        .fee-section {
+            flex: 1;
+            min-width: 160px;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: block;
+            margin-bottom: 6px;
+            color: #2c5a6e;
+            letter-spacing: -0.2px;
+        }
+        select, input {
+            background: white;
+            border: 1px solid #cbdde6;
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: 0.2s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #2b7a4b;
+            box-shadow: 0 0 0 3px rgba(43,122,75,0.2);
+        }
+        button {
+            background: white;
+            border: 1px solid #cbdde6;
+            border-radius: 40px;
+            padding: 8px 18px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f9fbfd;
+            color: #1f3b4c;
+        }
+        button.primary {
+            background: #2b7a4b;
+            border-color: #2b7a4b;
+            color: white;
+            box-shadow: 0 2px 6px rgba(43,122,75,0.2);
+        }
+        button.primary:hover {
+            background: #1f5e3a;
+            transform: translateY(-1px);
+        }
+        button.danger {
+            color: #b91c1c;
+            border-color: #f3cfcf;
+        }
+        button.danger:hover {
+            background: #fff0f0;
+            border-color: #e0b4b4;
+        }
+        button:hover {
+            background: #eef3f7;
+            transform: translateY(-1px);
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #eef5f0;
+            border-radius: 28px;
+            padding: 14px 24px;
+            margin-bottom: 24px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 40px;
+            padding: 8px 18px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            font-weight: 500;
+        }
+        .stat-card span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-right: 6px;
+            color: #1f5e3a;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #e2edf2;
+            background: white;
+            margin-top: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 780px;
+        }
+        th {
+            background: #f1f9f4;
+            padding: 14px 8px;
+            font-weight: 700;
+            color: #1f4e3a;
+            border-bottom: 2px solid #cbe5da;
+            position: sticky;
+            top: 0;
+            background-color: #f1f9f4;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e9edf2;
+            vertical-align: middle;
+        }
+        tr:hover td {
+            background-color: #fefce8;
+        }
+        .member-name {
+            font-weight: 700;
+            color: #0f2c38;
+        }
+        .phone {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #5c6f87;
+        }
+        .checkbox-cell {
+            text-align: center;
+            width: 55px;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            transform: scale(1);
+            accent-color: #2b7a4b;
+        }
+        .etc-input {
+            width: 150px;
+            padding: 6px 8px;
+            border-radius: 20px;
+            border: 1px solid #d4e0e8;
+            font-size: 0.8rem;
+        }
+        .badge-total {
+            background: #eef2f5;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0 0 0;
+        }
+        .footer-note {
+            margin-top: 28px;
+            text-align: right;
+            font-size: 0.7rem;
+            color: #7f96aa;
+            border-top: 1px solid #e2edf2;
+            padding-top: 18px;
+        }
+        @media (max-width: 700px) {
+            .container { padding: 16px; }
+            .stats { flex-direction: column; align-items: flex-start; }
+            .stat-card { width: 100%; }
+            .etc-input { width: 110px; }
+        }
+        button.icon-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🏆 대건고 43회 정기모임 관리</h1>
+    <div class="sub">✔️ 참석 · 회비 납부 · 기타사항 기록 | 2달에 한 번 정기모임 자동 집계</div>
+
+    <!-- 제어판 -->
+    <div class="control-panel">
+        <div class="meeting-section">
+            <label>📅 모임 선택 (로드/저장)</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <select id="meetingSelect" style="flex:2"></select>
+                <button id="loadMeetingBtn" class="primary">불러오기</button>
+                <button id="saveMeetingBtn" class="primary">💾 현재 모임 저장</button>
+            </div>
+        </div>
+        <div class="fee-section">
+            <label>💰 1인 회비 금액 (KRW)</label>
+            <input type="number" id="feeAmountInput" step="1000" value="30000" style="width:140px">
+        </div>
+        <div class="btn-group">
+            <button id="newMeetingBtn">➕ 새 모임</button>
+            <button id="deleteMeetingBtn" class="danger">🗑️ 삭제</button>
+            <button id="copyPrevBtn" title="이전 모임에서 참석/회비 복사">📋 복사</button>
+        </div>
+    </div>
+
+    <!-- 통계 요약 -->
+    <div class="stats" id="statsArea">
+        <div class="stat-card">👥 참석 인원: <span id="attendCount">0</span> 명</div>
+        <div class="stat-card">💰 회비 납부자: <span id="paidCount">0</span> 명</div>
+        <div class="stat-card">🏦 총 수금액: <span id="totalFeeSum">0</span> 원</div>
+        <div class="stat-card">📋 전체 회원: <span id="totalMemberCount">53</span> 명</div>
+    </div>
+
+    <!-- 편의 버튼 -->
+    <div class="action-buttons">
+        <button id="markAllAttendBtn">✅ 전체 참석 체크</button>
+        <button id="clearAllAttendBtn">⬜ 참석 전체 해제</button>
+        <button id="markAllPaidBtn">💰 전체 회비 납부</button>
+        <button id="clearAllPaidBtn">❌ 회비 납부 해제</button>
+        <button id="exportCSVBtn">📎 엑셀 내보내기 (CSV)</button>
+    </div>
+
+    <!-- 회원 테이블 -->
+    <div class="table-wrapper">
+        <table id="memberTable">
+            <thead>
+                <tr>
+                    <th>#</th><th>이름</th><th>연락처</th><th style="width:70px">참석</th><th style="width:80px">회비 납부</th><th>기타 (메모)</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+    <div class="footer-note">
+        ✅ 데이터는 브라우저에 저장됩니다 (localStorage) | 모임 단위로 참석/회비/기타 기록 보존 | 정회원 명단 53명 (2026 기준)
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // 1. 정회원 명단 (제공된 엑셀 기반, 1~53번)
+    // --------------------------------------------------------------
+    const MEMBERS_RAW = [
+        {no:1, name:"공태영", phone:"010-4242-0731", company:"마스터 스피치학원", position:"원장", address:"대구 달서구 월곡로 330"},
+        {no:2, name:"권대원", phone:"010-6525-7334", company:"㈜다온 코퍼레이션", position:"대표", address:"대구 중구 명덕로 69"},
+        {no:3, name:"김대훈", phone:"010-8824-7747", company:"대구골프스포츠", position:"대표", address:"대구 수성구 만촌동 425-30"},
+        {no:4, name:"김상현", phone:"010-2905-5652", company:"산업통상부", position:"사무관", address:"세종 한누리대로 402"},
+        {no:5, name:"김상훈", phone:"010-4875-4267", company:"㈜청담건축디자인", position:"대표", address:"대구 달성군 논공읍"},
+        {no:6, name:"김성웅", phone:"010-4095-0787", company:"제일정공", position:"품질보증팀장", address:"대구 북구 노원로 39길"},
+        {no:7, name:"김성훈", phone:"010-7753-5995", company:"굿카닷컴", position:"대표", address:"대구 동구 안심로 327"},
+        {no:8, name:"김용식", phone:"010-3818-5376", company:"금백스틸", position:"대표", address:"대구 달서구 성서서로"},
+        {no:9, name:"김윤철", phone:"010-3512-7048", company:"골드무역", position:"이사", address:"대구 동구 신평로"},
+        {no:10, name:"김주태", phone:"010-4141-6837", company:"가경 ENC", position:"대표", address:"대구 달성군 구지면"},
+        {no:11, name:"김진해", phone:"010-3804-8477", company:"iM Bank", position:"대리", address:"대구 수성동2가"},
+        {no:12, name:"김태하", phone:"010-6528-3121", company:"TL chemical", position:"대표", address:"경북 청도군"},
+        {no:13, name:"김태훈", phone:"010-3253-0224", company:"㈜제스트건설", position:"대표", address:"경북 고령군"},
+        {no:14, name:"김학동", phone:"010-4514-8754", company:"비니비치스튜디오", position:"대표", address:"대구 중구 동덕로"},
+        {no:15, name:"노영중", phone:"010-7222-7518", company:"㈜삼성전자", position:"수석부장", address:"수원 영통구"},
+        {no:16, name:"노태기", phone:"010-5531-0373", company:"와룡초등학교", position:"교감", address:"대구 달서구 선원남로"},
+        {no:17, name:"류형종", phone:"", company:"", position:"", address:""},
+        {no:18, name:"박근호", phone:"010-2529-0352", company:"경일감정평가법인", position:"지사장", address:"대구 수성구 국채보상로"},
+        {no:19, name:"박정휘", phone:"010-2653-4160", company:"제스트커뮤니케이션", position:"대표", address:"대구 수성구"},
+        {no:20, name:"박진욱", phone:"010-4524-2644", company:"㈜대화감정평가법인", position:"이사", address:"대구 수성구 지범로"},
+        {no:21, name:"박효진", phone:"010-3907-4311", company:"경심재가노인복지센터", position:"대표", address:"대구 서구 평리로"},
+        {no:22, name:"배종섭", phone:"010-8948-6589", company:"경북대학교", position:"약학대 학장", address:"대구 북구 대학로"},
+        {no:23, name:"배한용", phone:"010-8568-3156", company:"(주)해인", position:"대표", address:"대구 북구 노원로25길"},
+        {no:24, name:"서준석", phone:"010-8583-7956", company:"마루조아", position:"대표", address:"대구 달서구 송현동"},
+        {no:25, name:"석상용", phone:"010-2443-7434", company:"티앤티(TNT)", position:"대표", address:"대구 달서구 장기로"},
+        {no:26, name:"소재환", phone:"010-3300-3893", company:"건축사 사무소 삶", position:"건축사", address:"대구 달서구 상화로"},
+        {no:27, name:"양기주", phone:"010-7272-3892", company:"대담식품", position:"대표", address:"경산시 하양읍"},
+        {no:28, name:"유창우", phone:"010-9522-6362", company:"K-한방", position:"대표", address:"대구 북구 구암동"},
+        {no:29, name:"윤용원", phone:"010-3334-3714", company:"법률사무소 두드림", position:"변호사", address:"대구 수성구 동대구로"},
+        {no:30, name:"윤준호", phone:"010-8609-7154", company:"블루씨", position:"이사", address:"베트남 호치민"},
+        {no:31, name:"윤희삼", phone:"010-3095-7596", company:"디자인 SAM", position:"대표", address:"대구 달서구 상인로"},
+        {no:32, name:"이광희", phone:"010-8332-0020", company:"더블유에셋", position:"대표", address:"대구 서구 이현동"},
+        {no:33, name:"이병주", phone:"010-4515-2544", company:"달콤한아재신월성점", position:"대표", address:"대구 달서구 월배로"},
+        {no:34, name:"이상찬", phone:"010-4523-3694", company:"㈜한양에스엔씨", position:"팀장", address:"경북 성주군"},
+        {no:35, name:"이영찬", phone:"010-5183-2005", company:"대구지방검찰청", position:"검찰수사관", address:"대구 수성구"},
+        {no:36, name:"이정섭", phone:"010-9309-9802", company:"㈜리안 건축사사무소", position:"건축사", address:"대구 남구 대명남로"},
+        {no:37, name:"이종경", phone:"010-2922-1783", company:"대명세무법인", position:"세무사", address:"대구 남구 대명로"},
+        {no:38, name:"장정훈", phone:"010-3495-3792", company:"㈜삼성전기", position:"수석부장", address:"세종 연동면"},
+        {no:39, name:"전상규", phone:"010-5166-1132", company:"㈜경신전선", position:"전장설계팀장", address:"인천 연수구"},
+        {no:40, name:"전익성", phone:"010-2816-1193", company:"세이안 치과의원", position:"치과의사", address:"대구 북구 원대로"},
+        {no:41, name:"전해석", phone:"010-5144-1144", company:"대건공조", position:"대표", address:"대구 북구 한강로"},
+        {no:42, name:"전 헌", phone:"010-4431-5153", company:"굿카닷컴", position:"부장", address:"대구 동구 안심로"},
+        {no:43, name:"정일영", phone:"010-9181-5102", company:"대구경찰청", position:"경감", address:"대구 수성구 무학로"},
+        {no:44, name:"정창훈", phone:"010-6590-5544", company:"㈜한옥1957", position:"대표", address:"대구 중구"},
+        {no:45, name:"정호직", phone:"010-3454-9631", company:"㈜홍창", position:"부장", address:"대구 서구 평리로33길"},
+        {no:46, name:"조성헌", phone:"010-3652-7620", company:"사진이야기", position:"대표", address:"대구 남구 효성로"},
+        {no:47, name:"지남고", phone:"010-4599-4479", company:"승남건설", position:"대표", address:"대구 달성군 화원읍"},
+        {no:48, name:"채재윤", phone:"010-2550-2315", company:"TBC", position:"카메라감독", address:"대구 수성구 동대구로"},
+        {no:49, name:"최민수", phone:"010-7942-7585", company:"OsteoSys", position:"대표", address:"부산 북구"},
+        {no:50, name:"최정해", phone:"010-4906-8309", company:"경북대학교", position:"사범대학 교수", address:"대구 북구 대학로"},
+        {no:51, name:"최혁만", phone:"010-3810-1015", company:"대구지방경찰청", position:"경위", address:"대구 수성구 무학로"},
+        {no:52, name:"홍진찬", phone:"010-7535-2301", company:"다빛유치원", position:"주무관", address:"세종 달빛1로"},
+        {no:53, name:"황윤기", phone:"010-4531-3178", company:"㈜ 휴브아이웨어", position:"대표", address:"대구 서구 원대동"}
+    ];
+
+    const members = MEMBERS_RAW.map(m => ({
+        id: m.no,
+        name: m.name,
+        phone: m.phone || "번호없음",
+        displayInfo: m.name
+    }));
+
+    // 전역 데이터
+    let meetings = [];        // { id, name, feeAmount, membersStatus: [{attendance, feePaid, etc}] }
+    let currentMeetingId = null;
+    let currentMeetingObj = null;
+
+    // helpers
+    function generateEmptyStatus() {
+        return members.map(() => ({ attendance: false, feePaid: false, etc: "" }));
+    }
+
+    // 저장소 키
+    const STORAGE_KEY = "Daegeon_Meeting_Manager";
+
+    function saveToLocalStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(meetings));
+    }
+
+    function loadFromLocalStorage() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(raw) {
+            try {
+                const parsed = JSON.parse(raw);
+                if(Array.isArray(parsed)) {
+                    meetings = parsed;
+                    // 호환성: 기존 meetings의 membersStatus 길이 검증
+                    meetings.forEach(meet => {
+                        if(!meet.membersStatus || meet.membersStatus.length !== members.length) {
+                            meet.membersStatus = generateEmptyStatus();
+                        }
+                        if(meet.feeAmount === undefined) meet.feeAmount = 30000;
+                    });
+                    return;
+                }
+            } catch(e) {}
+        }
+        // 기본값: 2개의 예제 모임 (2달 주기)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const nextEven = (Math.floor(month/2)*2) + 2;
+        let meeting1Name = `${year}년 ${nextEven}월 정기모임`;
+        let meeting2Name = `${year}년 ${nextEven+2}월 정기모임`;
+        if(nextEven+2 > 12) meeting2Name = `${year+1}년 ${(nextEven+2)-12}월 정기모임`;
+        meetings = [
+            { id: "meet_1", name: meeting1Name, feeAmount: 30000, membersStatus: generateEmptyStatus() },
+            { id: "meet_2", name: meeting2Name, feeAmount: 30000, membersStatus: generateEmptyStatus() }
+        ];
+        saveToLocalStorage();
+    }
+
+    // 랜더링 테이블
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        if(!currentMeetingObj) {
+            tbody.innerHTML = '<tr><td colspan="6">모임을 선택해주세요</td></tr>';
+            return;
+        }
+        const statusList = currentMeetingObj.membersStatus;
+        const feeAmt = currentMeetingObj.feeAmount || 30000;
+        document.getElementById('feeAmountInput').value = feeAmt;
+        let html = '';
+        members.forEach((member, idx) => {
+            const st = statusList[idx] || { attendance: false, feePaid: false, etc: "" };
+            const checkedAttend = st.attendance ? 'checked' : '';
+            const checkedFee = st.feePaid ? 'checked' : '';
+            const etcVal = st.etc || '';
+            html += `<tr>
+                        <td style="text-align:center">${member.id}</td>
+                        <td class="member-name">${member.name}</td>
+                        <td class="phone">${member.phone}</td>
+                        <td class="checkbox-cell"><input type="checkbox" class="attend-cb" data-idx="${idx}" ${checkedAttend}></td>
+                        <td class="checkbox-cell"><input type="checkbox" class="fee-cb" data-idx="${idx}" ${checkedFee}></td>
+                        <td><input type="text" class="etc-input" data-idx="${idx}" value="${escapeHtml(etcVal)}" placeholder="메모"></td>
+                     </tr>`;
+        });
+        tbody.innerHTML = html;
+        attachTableEvents();
+        updateStatistics();
+    }
+
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    function attachTableEvents() {
+        document.querySelectorAll('.attend-cb').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                if(currentMeetingObj && currentMeetingObj.membersStatus[idx]) {
+                    currentMeetingObj.membersStatus[idx].attendance = e.target.checked;
+                    updateStatistics();
+                }
+            });
+        });
+        document.querySelectorAll('.fee-cb').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                if(currentMeetingObj && currentMeetingObj.membersStatus[idx]) {
+                    currentMeetingObj.membersStatus[idx].feePaid = e.target.checked;
+                    updateStatistics();
+                }
+            });
+        });
+        document.querySelectorAll('.etc-input').forEach(inp => {
+            inp.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                if(currentMeetingObj && currentMeetingObj.membersStatus[idx]) {
+                    currentMeetingObj.membersStatus[idx].etc = e.target.value;
+                }
+            });
+        });
+    }
+
+    function updateStatistics() {
+        if(!currentMeetingObj) return;
+        const status = currentMeetingObj.membersStatus;
+        const attendCnt = status.filter(s => s.attendance === true).length;
+        const paidCnt = status.filter(s => s.feePaid === true).length;
+        const feeAmt = currentMeetingObj.feeAmount || 30000;
+        const totalSum = paidCnt * feeAmt;
+        document.getElementById('attendCount').innerText = attendCnt;
+        document.getElementById('paidCount').innerText = paidCnt;
+        document.getElementById('totalFeeSum').innerText = totalSum.toLocaleString();
+        document.getElementById('totalMemberCount').innerText = members.length;
+    }
+
+    function updateMeetingSelect() {
+        const select = document.getElementById('meetingSelect');
+        select.innerHTML = '';
+        meetings.forEach(meet => {
+            const option = document.createElement('option');
+            option.value = meet.id;
+            option.textContent = `${meet.name} (회비 ${meet.feeAmount?.toLocaleString() || 30000}원)`;
+            if(currentMeetingId === meet.id) option.selected = true;
+            select.appendChild(option);
+        });
+    }
+
+    function loadMeetingById(meetingId) {
+        const found = meetings.find(m => m.id === meetingId);
+        if(found) {
+            currentMeetingId = found.id;
+            currentMeetingObj = found;
+            // 동기화 fee 입력창
+            document.getElementById('feeAmountInput').value = found.feeAmount || 30000;
+            renderTable();
+            updateMeetingSelect();
+        } else if(meetings.length > 0) {
+            currentMeetingId = meetings[0].id;
+            currentMeetingObj = meetings[0];
+            renderTable();
+            updateMeetingSelect();
+        } else {
+            currentMeetingObj = null;
+            renderTable();
+        }
+    }
+
+    // 현재 UI 상태를 currentMeetingObj에 동기화 (저장 전)
+    function syncUItoMeeting() {
+        if(!currentMeetingObj) return;
+        const rows = document.querySelectorAll('#tableBody tr');
+        if(rows.length === 0) return;
+        const statusList = currentMeetingObj.membersStatus;
+        for(let i=0; i<members.length; i++) {
+            const attendCb = document.querySelector(`.attend-cb[data-idx="${i}"]`);
+            const feeCb = document.querySelector(`.fee-cb[data-idx="${i}"]`);
+            const etcInput = document.querySelector(`.etc-input[data-idx="${i}"]`);
+            if(attendCb && statusList[i]) statusList[i].attendance = attendCb.checked;
+            if(feeCb && statusList[i]) statusList[i].feePaid = feeCb.checked;
+            if(etcInput && statusList[i]) statusList[i].etc = etcInput.value;
+        }
+        // fee amount 동기화
+        const newFee = parseInt(document.getElementById('feeAmountInput').value);
+        if(!isNaN(newFee) && newFee > 0) currentMeetingObj.feeAmount = newFee;
+    }
+
+    function saveCurrentMeeting() {
+        if(!currentMeetingObj) {
+            alert('저장할 모임이 없습니다. 새 모임을 만드세요.');
+            return;
+        }
+        syncUItoMeeting();
+        // meetings 배열 업데이트
+        const index = meetings.findIndex(m => m.id === currentMeetingObj.id);
+        if(index !== -1) meetings[index] = currentMeetingObj;
+        else meetings.push(currentMeetingObj);
+        saveToLocalStorage();
+        updateMeetingSelect();
+        alert(`✅ "${currentMeetingObj.name}" 모임이 저장되었습니다.`);
+        updateStatistics();
+    }
+
+    function createNewMeeting() {
+        let name = prompt("모임 이름 (예: 2026년 6월 정기모임)", `${new Date().getFullYear()}년 ${new Date().getMonth()+2}월 모임`);
+        if(!name) name = `새 모임 ${new Date().toLocaleDateString()}`;
+        const fee = parseInt(document.getElementById('feeAmountInput').value);
+        const newId = "meet_" + Date.now();
+        const newMeeting = {
+            id: newId,
+            name: name,
+            feeAmount: isNaN(fee) ? 30000 : fee,
+            membersStatus: generateEmptyStatus()
+        };
+        meetings.push(newMeeting);
+        saveToLocalStorage();
+        currentMeetingId = newId;
+        currentMeetingObj = newMeeting;
+        renderTable();
+        updateMeetingSelect();
+        alert(`새 모임 "${name}" 생성됨`);
+    }
+
+    function deleteCurrentMeeting() {
+        if(!currentMeetingObj) return;
+        if(meetings.length <= 1) {
+            alert("최소 하나의 모임은 유지해야 합니다. 삭제 대신 초기화를 고려하세요.");
+            return;
+        }
+        if(confirm(`"${currentMeetingObj.name}" 모임을 정말 삭제하시겠습니까?`)) {
+            const newMeetings = meetings.filter(m => m.id !== currentMeetingObj.id);
+            meetings = newMeetings;
+            saveToLocalStorage();
+            currentMeetingId = meetings[0]?.id || null;
+            currentMeetingObj = meetings[0] || null;
+            renderTable();
+            updateMeetingSelect();
+            if(currentMeetingObj) updateStatistics();
+        }
+    }
+
+    function copyFromPreviousMeeting() {
+        if(!currentMeetingObj) return;
+        if(meetings.length < 2) {
+            alert("복사할 이전 모임이 존재하지 않습니다.");
+            return;
+        }
+        const prevMeetingId = [...meetings].reverse().find(m => m.id !== currentMeetingObj.id);
+        if(!prevMeetingId) return;
+        const prevMeeting = meetings.find(m => m.id === prevMeetingId.id);
+        if(prevMeeting && confirm(`"${prevMeeting.name}" 의 참석/회비/기타 데이터를 현재 모임으로 복사하시겠습니까? (회비 금액은 유지)`)) {
+            const newStatus = JSON.parse(JSON.stringify(prevMeeting.membersStatus));
+            currentMeetingObj.membersStatus = newStatus;
+            renderTable();
+            saveCurrentMeeting();
+            alert("복사 완료! 저장 버튼을 눌러 반영되었습니다.");
+        }
+    }
+
+    // 마크 편의
+    function markAllAttend(value) {
+        if(!currentMeetingObj) return;
+        currentMeetingObj.membersStatus.forEach(s => s.attendance = value);
+        renderTable();
+    }
+    function markAllPaid(value) {
+        if(!currentMeetingObj) return;
+        currentMeetingObj.membersStatus.forEach(s => s.feePaid = value);
+        renderTable();
+    }
+
+    function exportToCSV() {
+        if(!currentMeetingObj) { alert("모임을 먼저 선택하세요"); return; }
+        syncUItoMeeting();
+        const rows = [["번호","이름","연락처","참석여부","회비납부","기타메모"]];
+        members.forEach((m, idx) => {
+            const st = currentMeetingObj.membersStatus[idx];
+            rows.push([
+                m.id, m.name, m.phone,
+                st.attendance ? "참석" : "불참",
+                st.feePaid ? "납부" : "미납",
+                st.etc || ""
+            ]);
+        });
+        const csvContent = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+        const blob = new Blob(["\uFEFF" + csvContent], {type: "text/csv;charset=utf-8;"});
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute("download", `${currentMeetingObj.name}_참석현황.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // 이벤트 등록 및 초기화
+    function init() {
+        loadFromLocalStorage();
+        if(meetings.length === 0) {
+            meetings.push({ id: "default", name: "첫 모임", feeAmount: 30000, membersStatus: generateEmptyStatus() });
+            saveToLocalStorage();
+        }
+        currentMeetingId = meetings[0].id;
+        currentMeetingObj = meetings[0];
+        renderTable();
+        updateMeetingSelect();
+
+        document.getElementById('loadMeetingBtn').addEventListener('click', () => {
+            const selId = document.getElementById('meetingSelect').value;
+            const found = meetings.find(m => m.id === selId);
+            if(found) {
+                if(currentMeetingObj) syncUItoMeeting(); // 미리 변경사항 저장 안함, 경고.
+                currentMeetingId = found.id;
+                currentMeetingObj = found;
+                renderTable();
+                updateMeetingSelect();
+            } else { alert("모임을 찾을 수 없음"); }
+        });
+        document.getElementById('saveMeetingBtn').addEventListener('click', saveCurrentMeeting);
+        document.getElementById('newMeetingBtn').addEventListener('click', createNewMeeting);
+        document.getElementById('deleteMeetingBtn').addEventListener('click', deleteCurrentMeeting);
+        document.getElementById('copyPrevBtn').addEventListener('click', copyFromPreviousMeeting);
+        document.getElementById('markAllAttendBtn').addEventListener('click', () => markAllAttend(true));
+        document.getElementById('clearAllAttendBtn').addEventListener('click', () => markAllAttend(false));
+        document.getElementById('markAllPaidBtn').addEventListener('click', () => markAllPaid(true));
+        document.getElementById('clearAllPaidBtn').addEventListener('click', () => markAllPaid(false));
+        document.getElementById('exportCSVBtn').addEventListener('click', exportToCSV);
+        document.getElementById('feeAmountInput').addEventListener('change', () => {
+            if(currentMeetingObj) {
+                const newVal = parseInt(document.getElementById('feeAmountInput').value);
+                if(!isNaN(newVal) && newVal>0) currentMeetingObj.feeAmount = newVal;
+                updateStatistics();
+            }
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
