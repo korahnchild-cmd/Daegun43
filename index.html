@@ -76,6 +76,8 @@ html[data-theme="dark"]{
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,.chip,summary,td.mrow,input[type=checkbox],a{-webkit-tap-highlight-color:transparent}
 body{
   font-family:var(--ff);
   background:var(--bg);
@@ -85,7 +87,7 @@ body{
   background-attachment:fixed;
   color:var(--text);
   -webkit-font-smoothing:antialiased;
-  padding:22px 14px 90px;
+  padding:22px max(14px,env(safe-area-inset-right)) calc(90px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));
   font-feature-settings:"tnum";
   transition:background-color .28s ease, color .28s ease;
 }
@@ -289,14 +291,15 @@ input[type=checkbox]:focus-visible{box-shadow:0 0 0 3px var(--ring)}
 
 /* ============ 플로팅 ============ */
 .fab{
-  position:fixed;left:18px;transform:none;bottom:18px;z-index:40;
-  display:flex;gap:14px;align-items:center;
+  position:fixed;left:18px;transform:none;bottom:calc(18px + env(safe-area-inset-bottom));z-index:40;
+  display:flex;gap:14px;align-items:center;cursor:pointer;
   background:var(--surface);border:1px solid var(--border-2);
-  border-radius:999px;padding:9px 18px;box-shadow:var(--shadow-lg);
-  font-size:.74rem;font-weight:650;color:var(--text-2);
-  backdrop-filter:blur(10px);pointer-events:none;
+  border-radius:999px;padding:10px 18px;box-shadow:var(--shadow-lg);
+  font-family:inherit;font-size:.74rem;font-weight:650;color:var(--text-2);
+  backdrop-filter:blur(10px);min-height:42px;
   transition:opacity .2s ease, transform .2s ease;
 }
+.fab:active{opacity:.65}
 body.typing .fab{opacity:0;transform:translateY(12px)}
 @media (max-width:720px){ body.typing .fab{transform:translate(-50%,12px)} }
 .fab b{color:var(--brand-2);font-size:.86rem;font-weight:800;margin-right:2px}
@@ -317,30 +320,39 @@ body.typing .fab{opacity:0;transform:translateY(12px)}
 }
 @media (max-width:1023px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:720px){
-  body{padding:16px 10px 96px}
+  body{padding:16px max(10px,env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
   .card{padding:15px;border-radius:16px}
   .controls{grid-template-columns:1fr}
   h1{font-size:1.14rem}
+  /* 검색·필터를 상단 고정 — 53명 스크롤 중에도 바로 접근 */
+  .roster-tools{
+    position:sticky;top:0;z-index:20;background:var(--surface);
+    margin:-6px -15px 10px;padding:10px 15px;
+    border-bottom:1px solid var(--border);
+  }
+  .chips{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none}
   .table-wrap{border:none;border-radius:0;overflow:visible}
   thead{display:none}
   tbody{display:block}
   tbody tr{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:7px;
     background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);
-    padding:11px 12px;margin-bottom:8px;
+    padding:10px 11px;margin-bottom:7px;
   }
   tbody tr.att{border-color:var(--brand-br);background:var(--att)}
   tbody tr:last-child td:first-child,tbody tr:last-child td:last-child{border-radius:0}
   tbody td{border:none;padding:0}
   td.mhead{
     grid-column:1/-1;display:flex;align-items:baseline;gap:9px;
-    padding-bottom:9px;border-bottom:1px solid var(--border);
+    padding-bottom:7px;border-bottom:1px solid var(--border);
   }
   td.mhead .ph{display:inline}
   td.hideM,td.num{display:none}
   td.mhead .nm{font-size:.98rem}
   td.mrow{
-    display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 0;
+    display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;
     background:var(--surface);border:1px solid var(--border);border-radius:11px;cursor:pointer;
   }
   td.mrow::before{content:attr(data-l);font-size:.7rem;color:var(--text-3);font-weight:700}
@@ -350,6 +362,23 @@ body.typing .fab{opacity:0;transform:translateY(12px)}
   td.mmemo::before{content:attr(data-l);font-size:.72rem;color:var(--text-3);font-weight:650;flex:none}
   .memo-in{flex:1;min-width:0;background:var(--surface);border-color:var(--border)}
   .fab{left:50%;transform:translateX(-50%);bottom:14px;gap:11px;padding:8px 15px;font-size:.71rem}
+}
+/* ===== 터치 기기 전반 (폰·태블릿). 화면폭이 아니라 입력방식 기준 ===== */
+@media (pointer:coarse){
+  /* iOS/iPadOS Safari 자동 확대 방지: 입력 요소는 16px 이상이어야 함 */
+  input[type=text],input[type=number],select,textarea,.memo-in,#notes{font-size:16px}
+  .memo-in{padding:9px 11px}
+  /* 탭 타깃 확보 (Apple 44px / Google 48dp 권장) */
+  .btn{min-height:44px;padding:11px 16px;font-size:.8rem}
+  .btn.sm{min-height:42px;padding:10px 14px;font-size:.78rem}
+  .chip{min-height:42px;padding:11px 15px;font-size:.78rem}
+  .iconbtn{width:44px;height:44px}
+  .bulk summary{min-height:44px;padding:12px 16px}
+  .saveflag{padding:10px 14px}
+  /* 전화 링크: 보이는 크기는 그대로, 히트 영역만 확대 */
+  a.ph{display:inline-block;padding:11px 8px;margin:-11px -8px}
+  thead th{padding:14px 8px}
+  tbody td{padding:12px 8px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -480,7 +509,7 @@ body.typing .fab{opacity:0;transform:translateY(12px)}
     <div class="roster-tools">
       <div class="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>
-        <input type="text" id="searchInput" placeholder="이름 · 연락처 · 메모 검색" autocomplete="off">
+        <input type="text" id="searchInput" placeholder="이름 · 초성 · 연락처 · 메모 검색" autocomplete="off" enterkeyhint="search">
       </div>
       <div class="chips" id="filterChips">
         <button class="chip on" data-f="all">전체</button>
@@ -524,11 +553,12 @@ body.typing .fab{opacity:0;transform:translateY(12px)}
   </div>
 </div>
 
-<div class="fab" id="fab">
+<button class="fab" id="fab" type="button" title="맨 위로">
   <span><b id="f1">0</b>1차</span>
   <span><b id="f2">0</b>2차</span>
   <span><b class="g" id="fp">0</b>납부</span>
-</div>
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -547,7 +577,13 @@ const MEMBERS_RAW=[
 {no:46,name:"조성헌",phone:"010-3652-7620"},{no:47,name:"지남고",phone:"010-4599-4479"},{no:48,name:"채재윤",phone:"010-2550-2315"},{no:49,name:"최민수",phone:"010-7942-7585"},{no:50,name:"최정해",phone:"010-4906-8309"},
 {no:51,name:"최혁만",phone:"010-3810-1015"},{no:52,name:"홍진찬",phone:"010-7535-2301"},{no:53,name:"황윤기",phone:"010-4531-3178"}
 ];
-const members=MEMBERS_RAW.map(m=>({id:m.no,name:m.name,phone:m.phone||""}));
+// 초성 검색 지원 (예: "ㄱㅅㅎ" → 김성훈)
+const CHO="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+function toCho(s){let o="";for(const ch of s){const c=ch.charCodeAt(0)-44032;o+=(c>=0&&c<11172)?CHO[Math.floor(c/588)]:ch;}return o;}
+const members=MEMBERS_RAW.map(m=>{
+  const name=m.name;
+  return{id:m.no,name:name,phone:m.phone||"",flat:name.replace(/\s/g,""),cho:toCho(name.replace(/\s/g,""))};
+});
 
 /* ========== 상태 ========== */
 const STORAGE_KEY="Daegeon_Meeting_Manager_V3";   // 기존 데이터 그대로 사용
@@ -624,9 +660,10 @@ function matches(i){
   if(f==="memo"&&!(st.etc||"").trim())return false;
   const q=filter.q.trim().toLowerCase();
   if(!q)return true;
-  const qd=q.replace(/\D/g,"");
-  const hay=(m.name+" "+m.name.replace(/\s/g,"")+" "+(st.etc||"")).toLowerCase();
+  if(/^[ㄱ-ㅎ]+$/.test(q))return m.cho.includes(q);      // 초성 검색
+  const hay=(m.name+" "+m.flat+" "+(st.etc||"")).toLowerCase();
   if(hay.includes(q))return true;
+  const qd=q.replace(/\D/g,"");
   if(qd&&m.phone.replace(/\D/g,"").includes(qd))return true;
   return false;
 }
@@ -914,6 +951,7 @@ $("restoreFile").addEventListener("change",e=>{
   r.readAsText(f);
 });
 $("themeBtn").onclick=()=>setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark",true);
+$("fab").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
 // 입력 중에는 하단 요약 배지 숨김
 document.addEventListener("focusin",e=>{
   if(e.target.matches("input[type=text],input[type=number],textarea"))document.body.classList.add("typing");
