@@ -1,663 +1,929 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>대건고 정기모임 관리 (1·2차 통합)</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: system-ui, 'Segoe UI', 'Noto Sans KR', sans-serif;
-        }
-        body {
-            background: #f0f4f8;
-            margin: 0;
-            padding: 20px 12px;
-            color: #1e2a3a;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-            padding: 18px 20px 28px;
-        }
-        h1 {
-            font-size: 1.7rem;
-            font-weight: 700;
-            margin: 0 0 4px;
-            background: linear-gradient(135deg, #1f5e3a, #2b7a4b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .sub {
-            color: #4a627a;
-            border-left: 4px solid #2b7a4b;
-            padding-left: 14px;
-            margin: 6px 0 20px;
-            font-size: 0.9rem;
-        }
-        /* 모임 선택 및 제어 */
-        .control-panel {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 16px 18px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            align-items: flex-end;
-            border: 1px solid #e2edf2;
-        }
-        .meeting-section {
-            flex: 3;
-            min-width: 200px;
-        }
-        .fee-section {
-            flex: 1;
-            min-width: 140px;
-        }
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        /* 모임 장소/식대 정보 */
-        .meeting-info {
-            background: #fefce8;
-            border-radius: 20px;
-            padding: 14px 18px;
-            margin-bottom: 20px;
-            border: 1px solid #f0e6b2;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            justify-content: space-between;
-        }
-        .info-item {
-            flex: 1;
-            min-width: 140px;
-        }
-        .info-item label {
-            font-weight: 700;
-            font-size: 0.7rem;
-            display: block;
-            margin-bottom: 4px;
-            color: #8a6e2d;
-        }
-        .info-item input {
-            width: 100%;
-            padding: 8px 10px;
-            border-radius: 16px;
-            border: 1px solid #e2d6a4;
-            background: white;
-            font-size: 0.85rem;
-        }
-        label {
-            font-weight: 600;
-            font-size: 0.75rem;
-            display: block;
-            margin-bottom: 5px;
-            color: #2c5a6e;
-        }
-        select, input {
-            background: white;
-            border: 1px solid #cbdde6;
-            border-radius: 14px;
-            padding: 8px 12px;
-            font-size: 0.85rem;
-            width: 100%;
-        }
-        button {
-            background: white;
-            border: 1px solid #cbdde6;
-            border-radius: 40px;
-            padding: 7px 16px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        button.primary {
-            background: #2b7a4b;
-            border-color: #2b7a4b;
-            color: white;
-        }
-        button.primary:hover { background: #1f5e3a; }
-        button.danger { color: #b91c1c; border-color: #f3cfcf; }
-        .stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            background: #eef5f0;
-            border-radius: 28px;
-            padding: 12px 20px;
-            margin-bottom: 22px;
-            justify-content: space-between;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 40px;
-            padding: 6px 16px;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-        .stat-card span {
-            font-size: 1.2rem;
-            font-weight: 800;
-            margin-right: 5px;
-            color: #1f5e3a;
-        }
-        .table-wrapper {
-            overflow-x: auto;
-            border-radius: 20px;
-            border: 1px solid #e2edf2;
-            margin-top: 12px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-            min-width: 720px;
-        }
-        th {
-            background: #f1f9f4;
-            padding: 12px 6px;
-            font-weight: 700;
-            color: #1f4e3a;
-            border-bottom: 2px solid #cbe5da;
-        }
-        td {
-            padding: 10px 6px;
-            border-bottom: 1px solid #e9edf2;
-            vertical-align: middle;
-        }
-        .member-name {
-            font-weight: 700;
-            color: #0f2c38;
-        }
-        .phone {
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: #5c6f87;
-        }
-        .checkbox-cell {
-            text-align: center;
-            width: 55px;
-        }
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #2b7a4b;
-        }
-        .etc-input {
-            width: 120px;
-            padding: 5px 8px;
-            border-radius: 20px;
-            border: 1px solid #d4e0e8;
-            font-size: 0.75rem;
-        }
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin: 12px 0 8px;
-        }
-        .footer-note {
-            margin-top: 24px;
-            text-align: right;
-            font-size: 0.7rem;
-            color: #7f96aa;
-            border-top: 1px solid #e2edf2;
-            padding-top: 16px;
-        }
-        @media (max-width: 640px) {
-            .container { padding: 14px; }
-            .info-item { min-width: 100%; }
-            .etc-input { width: 90px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f4d33">
+<title>대건고 43회 정기모임 관리</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+/* ============ 디자인 토큰 ============ */
+:root{
+  color-scheme: light;
+  --bg:#eef2ef;
+  --bg-tint-1:rgba(20,96,63,.07);
+  --bg-tint-2:rgba(169,132,40,.06);
+  --surface:#ffffff;
+  --surface-2:#f6f9f7;
+  --surface-3:#eef4f0;
+  --border:#e3eae5;
+  --border-2:#cfdcd5;
+  --text:#111c17;
+  --text-2:#4d6259;
+  --text-3:#7d928a;
+  --brand:#0f4d33;
+  --brand-2:#1a7a51;
+  --brand-ink:#ffffff;
+  --brand-soft:#e5f1eb;
+  --gold:#9a7b23;
+  --gold-soft:#f6efdc;
+  --danger:#a52016;
+  --danger-soft:#fbeceb;
+  --danger-br:#e7c3bf;
+  --warn:#8a6a10;
+  --att:#eaf4ee;
+  --att-h:#e0eee7;
+  --ring:rgba(26,122,81,.18);
+  --brand-br:#b5d6c6;
+  --shadow-sm:0 1px 2px rgba(13,32,24,.05);
+  --shadow:0 1px 2px rgba(13,32,24,.04), 0 10px 28px -12px rgba(13,32,24,.16);
+  --shadow-lg:0 24px 60px -20px rgba(13,32,24,.34);
+  --r-lg:20px; --r-md:14px; --r-sm:10px;
+  --ff:'Pretendard Variable', Pretendard, system-ui, -apple-system, 'Segoe UI', 'Noto Sans KR', sans-serif;
+  --mono:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+}
+html[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#080c0a;
+  --bg-tint-1:rgba(63,191,133,.10);
+  --bg-tint-2:rgba(216,180,90,.06);
+  --surface:#111815;
+  --surface-2:#161f1b;
+  --surface-3:#1c2621;
+  --border:#242f29;
+  --border-2:#33443b;
+  --text:#e9f0ec;
+  --text-2:#a2b5ab;
+  --text-3:#76897f;
+  --brand:#3fbf85;
+  --brand-2:#57d29a;
+  --brand-ink:#06170f;
+  --brand-soft:#152a21;
+  --gold:#d8b45a;
+  --gold-soft:#2a2417;
+  --danger:#ff7a6e;
+  --danger-soft:#2a1614;
+  --danger-br:#5c2b26;
+  --warn:#d8b45a;
+  --att:#122620;
+  --att-h:#173029;
+  --ring:rgba(63,191,133,.24);
+  --brand-br:#2c6a4e;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 12px 30px -14px rgba(0,0,0,.75);
+  --shadow-lg:0 28px 70px -24px rgba(0,0,0,.85);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--ff);
+  background:var(--bg);
+  background-image:
+    radial-gradient(1200px 620px at 12% -8%, var(--bg-tint-1), transparent 62%),
+    radial-gradient(900px 520px at 96% 4%, var(--bg-tint-2), transparent 60%);
+  background-attachment:fixed;
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  padding:22px 14px 90px;
+  font-feature-settings:"tnum";
+  transition:background-color .28s ease, color .28s ease;
+}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ============ 헤더 ============ */
+.topbar{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  margin-bottom:18px;padding:0 4px;flex-wrap:wrap;
+}
+.brandline{display:flex;align-items:center;gap:12px}
+.crest{
+  width:44px;height:44px;flex:none;border-radius:13px;
+  background:linear-gradient(150deg,var(--brand),var(--brand-2));
+  color:var(--brand-ink);display:grid;place-items:center;
+  font-weight:800;font-size:.82rem;letter-spacing:.02em;
+  box-shadow:var(--shadow-sm);
+}
+h1{
+  font-size:1.32rem;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.25;
+}
+.tagline{margin:3px 0 0;font-size:.78rem;color:var(--text-3);letter-spacing:.01em}
+.topactions{display:flex;align-items:center;gap:8px}
+.saveflag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:.72rem;color:var(--text-3);
+  background:var(--surface);border:1px solid var(--border);
+  padding:7px 12px;border-radius:999px;white-space:nowrap;box-shadow:var(--shadow-sm);
+}
+.saveflag .dot{width:6px;height:6px;border-radius:50%;background:var(--brand-2);transition:.25s}
+.saveflag.dirty .dot{background:var(--gold)}
+.iconbtn{
+  width:38px;height:38px;flex:none;border-radius:12px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text-2);
+  display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-sm);
+  transition:.18s;
+}
+.iconbtn:hover{color:var(--brand-2);border-color:var(--border-2);transform:translateY(-1px)}
+.iconbtn svg{width:18px;height:18px}
+html[data-theme="light"] .i-moon{display:block}
+html[data-theme="light"] .i-sun{display:none}
+html[data-theme="dark"] .i-moon{display:none}
+html[data-theme="dark"] .i-sun{display:block}
+
+/* ============ 카드 ============ */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--shadow);
+  padding:18px;margin-bottom:16px;
+}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:.86rem;font-weight:750;letter-spacing:-.01em;color:var(--text);
+}
+.card-title .ico{color:var(--brand-2);display:grid;place-items:center}
+.card-title .ico svg{width:16px;height:16px}
+.card-sub{font-size:.72rem;color:var(--text-3);font-weight:500}
+
+/* ============ 폼 ============ */
+label.fl{display:block;font-size:.7rem;font-weight:650;color:var(--text-3);margin-bottom:6px;letter-spacing:.02em}
+input,select,textarea,button{font-family:inherit;font-size:.86rem;color:var(--text)}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:10px 12px;transition:.16s;outline:none;
+}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{
+  border-color:var(--brand-2);background:var(--surface);
+  box-shadow:0 0 0 3px var(--ring);
+}
+input::placeholder,textarea::placeholder{color:var(--text-3);opacity:.75}
+select{appearance:none;cursor:pointer;padding-right:34px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--text-3) 50%),linear-gradient(135deg,var(--text-3) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 51%, calc(100% - 13px) 51%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);
+  border-radius:999px;padding:9px 15px;font-size:.76rem;font-weight:650;
+  cursor:pointer;transition:.16s;white-space:nowrap;
+}
+.btn:hover{border-color:var(--border-2);color:var(--text);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(150deg,var(--brand),var(--brand-2));border-color:transparent;color:var(--brand-ink);box-shadow:var(--shadow-sm)}
+.btn.primary:hover{filter:brightness(1.06);color:var(--brand-ink)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger);background:transparent;border-color:var(--danger-br)}
+.btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.btn.sm{padding:7px 12px;font-size:.72rem}
+
+/* ============ 컨트롤 바 ============ */
+.controls{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(0,1fr);gap:14px;align-items:end}
+.meet-row{display:flex;gap:8px}
+.meet-row select{flex:1;min-width:0}
+.ctl-more{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
+
+/* ============ KPI ============ */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:15px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.kpi::after{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--brand-2);opacity:.85}
+.kpi.gold::after{background:var(--gold)}
+.kpi-l{font-size:.7rem;color:var(--text-3);font-weight:650;letter-spacing:.02em}
+.kpi-v{font-size:1.55rem;font-weight:800;letter-spacing:-.03em;margin-top:5px;line-height:1.1}
+.kpi-v small{font-size:.72rem;font-weight:600;color:var(--text-3);margin-left:3px;letter-spacing:0}
+.bar{height:4px;border-radius:99px;background:var(--surface-3);margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.bar.gold i{background:linear-gradient(90deg,var(--gold),color-mix(in srgb,var(--gold) 60%,#fff))}
+
+/* ============ 정산 ============ */
+.settle{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.srow{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:11px 13px}
+.srow .l{font-size:.68rem;color:var(--text-3);font-weight:650}
+.srow .v{font-size:1rem;font-weight:750;margin-top:4px;letter-spacing:-.02em}
+.srow.hero{background:var(--brand-soft);border-color:var(--brand-br)}
+.srow.hero .v{color:var(--brand-2);font-size:1.16rem}
+.srow.neg{background:var(--danger-soft);border-color:var(--danger-br)}
+.srow.neg .v{color:var(--danger)}
+.settle-note{margin-top:11px;font-size:.7rem;color:var(--text-3);line-height:1.65}
+
+/* ============ 모임 정보 ============ */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+
+/* ============ 메모 ============ */
+#notes{min-height:150px;resize:vertical;line-height:1.75;font-size:.85rem;padding:14px}
+.notes-tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.notes-count{margin-left:auto;font-size:.68rem;color:var(--text-3)}
+
+/* ============ 명단 ============ */
+.roster-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.search{position:relative;flex:1;min-width:190px}
+.search input{padding-left:36px;border-radius:999px}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-3);pointer-events:none}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);
+  border-radius:999px;padding:7px 13px;font-size:.73rem;font-weight:650;cursor:pointer;transition:.16s;
+}
+.chip:hover{border-color:var(--border-2);color:var(--text)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+html[data-theme="dark"] .chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
+.bulk{margin:0 0 12px}
+.bulk summary{
+  cursor:pointer;list-style:none;font-size:.74rem;font-weight:650;color:var(--text-2);
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--border);
+  border-radius:999px;background:var(--surface-2);transition:.16s;user-select:none;
+}
+.bulk summary::-webkit-details-marker{display:none}
+.bulk summary:hover{color:var(--text);border-color:var(--border-2)}
+.bulk[open] summary{border-color:var(--border-2);color:var(--text)}
+.bulk-body{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;padding:13px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md)}
+.bulk-hint{width:100%;font-size:.69rem;color:var(--text-3);margin-bottom:3px}
+
+.table-wrap{border:1px solid var(--border);border-radius:var(--r-md)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:.83rem}
+thead th{
+  position:sticky;top:0;z-index:3;
+  background:var(--surface-3);color:var(--text-2);
+  font-size:.7rem;font-weight:700;letter-spacing:.02em;
+  padding:11px 8px;text-align:left;white-space:nowrap;
+  box-shadow:inset 0 -1px 0 var(--border);
+}
+thead th:first-child{border-top-left-radius:13px}
+thead th:last-child{border-top-right-radius:13px}
+thead th.c{text-align:center}
+tbody td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:last-child td:first-child{border-bottom-left-radius:13px}
+tbody tr:last-child td:last-child{border-bottom-right-radius:13px}
+tbody tr{transition:background .14s}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr.att{background:var(--att)}
+tbody tr.att:hover{background:var(--att-h)}
+td.mhead .ph{display:none}
+.c{text-align:center}
+.num{color:var(--text-3);font-size:.74rem;font-variant-numeric:tabular-nums;width:38px}
+.nm{font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.ph{font-family:var(--mono);font-size:.74rem;color:var(--text-2);text-decoration:none;white-space:nowrap}
+.ph:hover{color:var(--brand-2);text-decoration:underline}
+.ph.none{color:var(--text-3);opacity:.6}
+input[type=checkbox]{
+  appearance:none;width:20px;height:20px;border-radius:6px;
+  border:1.5px solid var(--border-2);background:var(--surface-2);
+  cursor:pointer;transition:.14s;position:relative;vertical-align:middle;
+}
+input[type=checkbox]:hover{border-color:var(--brand-2)}
+input[type=checkbox]:checked{background:var(--brand-2);border-color:var(--brand-2)}
+input[type=checkbox]:checked::after{
+  content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+  border:solid var(--brand-ink);border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+input[type=checkbox].fee:checked{background:var(--gold);border-color:var(--gold)}
+input[type=checkbox]:focus-visible{box-shadow:0 0 0 3px var(--ring)}
+.memo-in{padding:7px 10px;border-radius:var(--r-sm);font-size:.78rem;background:transparent;border:1px solid transparent}
+.memo-in:hover{border-color:var(--border)}
+.memo-in:not(:placeholder-shown){background:var(--surface-2);border-color:var(--border)}
+.empty{text-align:center;padding:44px 16px;color:var(--text-3);font-size:.83rem}
+
+/* ============ 플로팅 ============ */
+.fab{
+  position:fixed;left:18px;transform:none;bottom:18px;z-index:40;
+  display:flex;gap:14px;align-items:center;
+  background:var(--surface);border:1px solid var(--border-2);
+  border-radius:999px;padding:9px 18px;box-shadow:var(--shadow-lg);
+  font-size:.74rem;font-weight:650;color:var(--text-2);
+  backdrop-filter:blur(10px);pointer-events:none;
+  transition:opacity .2s ease, transform .2s ease;
+}
+body.typing .fab{opacity:0;transform:translateY(12px)}
+@media (max-width:720px){ body.typing .fab{transform:translate(-50%,12px)} }
+.fab b{color:var(--brand-2);font-size:.86rem;font-weight:800;margin-right:2px}
+.fab .g{color:var(--gold)}
+#toast{
+  position:fixed;left:50%;transform:translate(-50%,14px);bottom:76px;z-index:60;
+  background:var(--text);color:var(--bg);padding:11px 20px;border-radius:999px;
+  font-size:.78rem;font-weight:650;box-shadow:var(--shadow-lg);
+  opacity:0;pointer-events:none;transition:.28s cubic-bezier(.2,.8,.2,1);max-width:88vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.foot{text-align:center;font-size:.7rem;color:var(--text-3);padding:6px 0 0;line-height:1.8}
+
+/* ============ 반응형 ============ */
+@media (max-width:899px) and (min-width:721px){
+  .table-wrap{overflow-x:auto}
+  table{min-width:700px}
+}
+@media (max-width:1023px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:720px){
+  body{padding:16px 10px 96px}
+  .card{padding:15px;border-radius:16px}
+  .controls{grid-template-columns:1fr}
+  h1{font-size:1.14rem}
+  .table-wrap{border:none;border-radius:0;overflow:visible}
+  thead{display:none}
+  tbody{display:block}
+  tbody tr{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);
+    padding:11px 12px;margin-bottom:8px;
+  }
+  tbody tr.att{border-color:var(--brand-br);background:var(--att)}
+  tbody tr:last-child td:first-child,tbody tr:last-child td:last-child{border-radius:0}
+  tbody td{border:none;padding:0}
+  td.mhead{
+    grid-column:1/-1;display:flex;align-items:baseline;gap:9px;
+    padding-bottom:9px;border-bottom:1px solid var(--border);
+  }
+  td.mhead .ph{display:inline}
+  td.hideM,td.num{display:none}
+  td.mhead .nm{font-size:.98rem}
+  td.mrow{
+    display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 0;
+    background:var(--surface);border:1px solid var(--border);border-radius:11px;cursor:pointer;
+  }
+  td.mrow::before{content:attr(data-l);font-size:.7rem;color:var(--text-3);font-weight:700}
+  td.mrow input[type=checkbox]{width:23px;height:23px;pointer-events:none}
+  td.mrow input[type=checkbox]:checked::after{left:7px;top:3px}
+  td.mmemo{grid-column:1/-1;display:flex;align-items:center;gap:9px}
+  td.mmemo::before{content:attr(data-l);font-size:.72rem;color:var(--text-3);font-weight:650;flex:none}
+  .memo-in{flex:1;min-width:0;background:var(--surface);border-color:var(--border)}
+  .fab{left:50%;transform:translateX(-50%);bottom:14px;gap:11px;padding:8px 15px;font-size:.71rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
-<div class="container">
-    <h1>🏆 대건고 43회 정기모임</h1>
-    <div class="sub">✔️ 1차 / 2차 참석 · 회비 납부 · 장소 및 식대 기록</div>
+<div class="wrap">
 
-    <!-- 모임 선택 컨트롤 -->
-    <div class="control-panel">
-        <div class="meeting-section">
-            <label>📅 모임 선택</label>
-            <div style="display: flex; gap: 6px;">
-                <select id="meetingSelect" style="flex:2"></select>
-                <button id="loadMeetingBtn" class="primary">불러오기</button>
-                <button id="saveMeetingBtn" class="primary">💾 저장</button>
-            </div>
+  <!-- 헤더 -->
+  <div class="topbar">
+    <div class="brandline">
+      <div class="crest">43</div>
+      <div>
+        <h1>대건고 43회 정기모임</h1>
+        <p class="tagline">격월 정기모임 · 1·2차 참석 / 회비 / 정산 / 기록</p>
+      </div>
+    </div>
+    <div class="topactions">
+      <span class="saveflag" id="saveFlag"><span class="dot"></span><span id="saveText">자동 저장됨</span></span>
+      <button class="iconbtn" id="themeBtn" title="다크/라이트 전환" aria-label="테마 전환">
+        <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 모임 선택 -->
+  <div class="card">
+    <div class="controls">
+      <div>
+        <label class="fl" for="meetingSelect">모임 선택</label>
+        <div class="meet-row">
+          <select id="meetingSelect"></select>
+          <button class="btn primary" id="newMeetingBtn">＋ 새 모임</button>
         </div>
-        <div class="fee-section">
-            <label>💰 1인 회비 (KRW)</label>
-            <input type="number" id="feeAmountInput" step="1000" value="30000">
-        </div>
-        <div class="btn-group">
-            <button id="newMeetingBtn">➕ 새 모임</button>
-            <button id="deleteMeetingBtn" class="danger">🗑️ 삭제</button>
-            <button id="copyPrevBtn">📋 이전 모임 복사</button>
-        </div>
+      </div>
+      <div>
+        <label class="fl" for="feeAmountInput">1인 회비 (원)</label>
+        <input type="number" id="feeAmountInput" step="1000" min="0" value="30000" inputmode="numeric">
+      </div>
+    </div>
+    <div class="ctl-more">
+      <button class="btn sm" id="renameBtn">모임명 변경</button>
+      <button class="btn sm" id="copyPrevBtn">이전 모임 복사</button>
+      <button class="btn sm" id="exportCSVBtn">CSV 내보내기</button>
+      <button class="btn sm" id="backupBtn">백업 저장</button>
+      <button class="btn sm" id="restoreBtn">백업 불러오기</button>
+      <button class="btn sm danger" id="deleteMeetingBtn">모임 삭제</button>
+      <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-l">1차 참석</div>
+      <div class="kpi-v"><span id="k1">0</span><small>/ <span class="totN">53</span>명</small></div>
+      <div class="bar"><i id="b1" style="width:0%"></i></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-l">2차 참석</div>
+      <div class="kpi-v"><span id="k2">0</span><small>/ <span class="totN">53</span>명</small></div>
+      <div class="bar"><i id="b2" style="width:0%"></i></div>
+    </div>
+    <div class="kpi gold">
+      <div class="kpi-l">회비 납부</div>
+      <div class="kpi-v"><span id="kp">0</span><small>명</small></div>
+      <div class="bar gold"><i id="bp" style="width:0%"></i></div>
+    </div>
+    <div class="kpi gold">
+      <div class="kpi-l">걷은 회비</div>
+      <div class="kpi-v"><span id="kf">0</span><small>원</small></div>
+      <div class="bar gold"><i id="bf" style="width:0%"></i></div>
+    </div>
+  </div>
+
+  <!-- 정산 -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h4M15 17.5h1"/></svg></span>정산 요약</div>
+      <span class="card-sub">회비 · 식대 자동 계산</span>
+    </div>
+    <div class="settle">
+      <div class="srow"><div class="l">걷은 회비</div><div class="v" id="sIncome">0원</div></div>
+      <div class="srow"><div class="l">총 식대 (1차+2차)</div><div class="v" id="sCost">0원</div></div>
+      <div class="srow hero" id="sBalWrap"><div class="l" id="sBalLabel">잔액</div><div class="v" id="sBal">0원</div></div>
+      <div class="srow"><div class="l">1차 참석자 1인당 식대</div><div class="v" id="sPer1">0원</div></div>
+      <div class="srow"><div class="l">2차 참석자 1인당 식대</div><div class="v" id="sPer2">0원</div></div>
+      <div class="srow"><div class="l">1차 참석자 중 미납</div><div class="v" id="sUnpaid">0명</div></div>
+    </div>
+    <div class="settle-note" id="sNote"></div>
+  </div>
+
+  <!-- 장소/식대 -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/></svg></span>모임 장소 · 식대</div>
+      <span class="card-sub">모임별로 저장됩니다</span>
+    </div>
+    <div class="info-grid">
+      <div><label class="fl" for="place1">1차 장소</label><input type="text" id="place1" placeholder="예: 대구 수성구 OO식당"></div>
+      <div><label class="fl" for="mealCost1">1차 식대 합계 (원)</label><input type="number" id="mealCost1" step="10000" min="0" placeholder="0" inputmode="numeric"></div>
+      <div><label class="fl" for="place2">2차 장소</label><input type="text" id="place2" placeholder="예: 대구 중구 OO바"></div>
+      <div><label class="fl" for="mealCost2">2차 식대 합계 (원)</label><input type="number" id="mealCost2" step="10000" min="0" placeholder="0" inputmode="numeric"></div>
+    </div>
+  </div>
+
+  <!-- 당일 중점 기록 -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V6.5z"/><path d="M15 3v4h4M9 13h6M9 17h4"/></svg></span>당일 중점 기록</div>
+      <span class="card-sub" id="notesStamp"></span>
+    </div>
+    <textarea id="notes" placeholder="오늘 모임의 중점 내용을 기록하세요.&#10;· 주요 안건과 논의 내용&#10;· 결정사항 / 합의된 것&#10;· 회비·경조사 관련 전달사항&#10;· 다음 모임 준비사항 (날짜, 장소, 담당)"></textarea>
+    <div class="notes-tools">
+      <button class="btn sm" id="tplBtn">양식 넣기</button>
+      <button class="btn sm" id="copyNotesBtn">메모 복사</button>
+      <span class="notes-count" id="notesCount">0자</span>
+    </div>
+  </div>
+
+  <!-- 명단 -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></span>회원 명단</div>
+      <span class="card-sub" id="visCount"></span>
     </div>
 
-    <!-- 모임 장소 및 식대 정보 (모임별 저장) -->
-    <div class="meeting-info" id="meetingInfoArea">
-        <div class="info-item">
-            <label>🍽️ 1차 모임 장소</label>
-            <input type="text" id="place1" placeholder="예: 대구 수성구 OO식당">
-        </div>
-        <div class="info-item">
-            <label>💰 1차 식대 합계 (KRW)</label>
-            <input type="number" id="mealCost1" step="10000" placeholder="0">
-        </div>
-        <div class="info-item">
-            <label>🥂 2차 모임 장소</label>
-            <input type="text" id="place2" placeholder="예: 대구 중구 OO바">
-        </div>
-        <div class="info-item">
-            <label>💰 2차 식대 합계 (KRW)</label>
-            <input type="number" id="mealCost2" step="10000" placeholder="0">
-        </div>
+    <div class="roster-tools">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>
+        <input type="text" id="searchInput" placeholder="이름 · 연락처 · 메모 검색" autocomplete="off">
+      </div>
+      <div class="chips" id="filterChips">
+        <button class="chip on" data-f="all">전체</button>
+        <button class="chip" data-f="a1">1차 참석</button>
+        <button class="chip" data-f="x1">1차 불참</button>
+        <button class="chip" data-f="a2">2차 참석</button>
+        <button class="chip" data-f="unpaid">미납</button>
+        <button class="chip" data-f="memo">메모 있음</button>
+      </div>
     </div>
 
-    <!-- 통계 요약 -->
-    <div class="stats">
-        <div class="stat-card">👥 1차 참석: <span id="attend1Count">0</span></div>
-        <div class="stat-card">🥂 2차 참석: <span id="attend2Count">0</span></div>
-        <div class="stat-card">💰 회비 납부: <span id="paidCount">0</span> 명</div>
-        <div class="stat-card">🏦 총 회비: <span id="totalFeeSum">0</span> 원</div>
-        <div class="stat-card">📋 전체 회원: <span id="totalMemberCount">53</span></div>
-        <div class="stat-card">🍽️ 1차 식대: <span id="displayMeal1">0</span> 원</div>
-        <div class="stat-card">🥂 2차 식대: <span id="displayMeal2">0</span> 원</div>
-    </div>
+    <details class="bulk">
+      <summary>일괄 처리</summary>
+      <div class="bulk-body">
+        <div class="bulk-hint">현재 화면에 표시된 인원에게만 적용됩니다. (검색·필터 중이면 그 대상만)</div>
+        <button class="btn sm" data-bulk="a1:1">1차 전체 참석</button>
+        <button class="btn sm" data-bulk="a1:0">1차 전체 해제</button>
+        <button class="btn sm" data-bulk="a2:1">2차 전체 참석</button>
+        <button class="btn sm" data-bulk="a2:0">2차 전체 해제</button>
+        <button class="btn sm" data-bulk="fee:1">회비 전체 납부</button>
+        <button class="btn sm" data-bulk="fee:0">회비 전체 미납</button>
+        <button class="btn sm" data-bulk="sync2">1차 참석자 → 2차 동일 적용</button>
+      </div>
+    </details>
 
-    <!-- 일괄 동작 버튼 -->
-    <div class="action-buttons">
-        <button id="markAllAttend1Btn">✅ 전체 1차 참석</button>
-        <button id="clearAllAttend1Btn">⬜ 1차 전체 해제</button>
-        <button id="markAllAttend2Btn">✅ 전체 2차 참석</button>
-        <button id="clearAllAttend2Btn">⬜ 2차 전체 해제</button>
-        <button id="markAllPaidBtn">💰 전체 회비 납부</button>
-        <button id="clearAllPaidBtn">❌ 회비 미납</button>
-        <button id="exportCSVBtn">📎 CSV 내보내기</button>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">#</th><th>이름</th><th>연락처</th>
+            <th class="c">1차</th><th class="c">2차</th><th class="c">회비</th><th>메모</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>
+  </div>
 
-    <!-- 회원 테이블 (연락포함, 2차 참석은 기타메모 우측) -->
-    <div class="table-wrapper">
-        <table id="memberTable">
-            <thead>
-                <tr><th>#</th><th>이름</th><th>연락처</th><th>1차 참석</th><th>회비 납부</th><th>기타 메모</th><th>2차 참석</th></tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
-    <div class="footer-note">
-        ✅ 모든 데이터는 브라우저(localStorage)에 저장 | 모임별 1·2차 장소·식대 기록 가능
-    </div>
+  <div class="foot">
+    데이터는 이 브라우저에 자동 저장됩니다 · 기기 변경 시 <b>백업 저장</b>으로 파일을 옮기세요
+  </div>
 </div>
 
+<div class="fab" id="fab">
+  <span><b id="f1">0</b>1차</span>
+  <span><b id="f2">0</b>2차</span>
+  <span><b class="g" id="fp">0</b>납부</span>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
 <script>
-    // ---------- 정회원 명단 (연락처 포함) ----------
-    const MEMBERS_RAW = [
-        {no:1, name:"공태영", phone:"010-4242-0731"},{no:2, name:"권대원", phone:"010-6525-7334"},{no:3, name:"김대훈", phone:"010-8824-7747"},{no:4, name:"김상현", phone:"010-2905-5652"},{no:5, name:"김상훈", phone:"010-4875-4267"},
-        {no:6, name:"김성웅", phone:"010-4095-0787"},{no:7, name:"김성훈", phone:"010-7753-5995"},{no:8, name:"김용식", phone:"010-3818-5376"},{no:9, name:"김윤철", phone:"010-3512-7048"},{no:10, name:"김주태", phone:"010-4141-6837"},
-        {no:11, name:"김진해", phone:"010-3804-8477"},{no:12, name:"김태하", phone:"010-6528-3121"},{no:13, name:"김태훈", phone:"010-3253-0224"},{no:14, name:"김학동", phone:"010-4514-8754"},{no:15, name:"노영중", phone:"010-7222-7518"},
-        {no:16, name:"노태기", phone:"010-5531-0373"},{no:17, name:"류형종", phone:""},{no:18, name:"박근호", phone:"010-2529-0352"},{no:19, name:"박정휘", phone:"010-2653-4160"},{no:20, name:"박진욱", phone:"010-4524-2644"},
-        {no:21, name:"박효진", phone:"010-3907-4311"},{no:22, name:"배종섭", phone:"010-8948-6589"},{no:23, name:"배한용", phone:"010-8568-3156"},{no:24, name:"서준석", phone:"010-8583-7956"},{no:25, name:"석상용", phone:"010-2443-7434"},
-        {no:26, name:"소재환", phone:"010-3300-3893"},{no:27, name:"양기주", phone:"010-7272-3892"},{no:28, name:"유창우", phone:"010-9522-6362"},{no:29, name:"윤용원", phone:"010-3334-3714"},{no:30, name:"윤준호", phone:"010-8609-7154"},
-        {no:31, name:"윤희삼", phone:"010-3095-7596"},{no:32, name:"이광희", phone:"010-8332-0020"},{no:33, name:"이병주", phone:"010-4515-2544"},{no:34, name:"이상찬", phone:"010-4523-3694"},{no:35, name:"이영찬", phone:"010-5183-2005"},
-        {no:36, name:"이정섭", phone:"010-9309-9802"},{no:37, name:"이종경", phone:"010-2922-1783"},{no:38, name:"장정훈", phone:"010-3495-3792"},{no:39, name:"전상규", phone:"010-5166-1132"},{no:40, name:"전익성", phone:"010-2816-1193"},
-        {no:41, name:"전해석", phone:"010-5144-1144"},{no:42, name:"전 헌", phone:"010-4431-5153"},{no:43, name:"정일영", phone:"010-9181-5102"},{no:44, name:"정창훈", phone:"010-6590-5544"},{no:45, name:"정호직", phone:"010-3454-9631"},
-        {no:46, name:"조성헌", phone:"010-3652-7620"},{no:47, name:"지남고", phone:"010-4599-4479"},{no:48, name:"채재윤", phone:"010-2550-2315"},{no:49, name:"최민수", phone:"010-7942-7585"},{no:50, name:"최정해", phone:"010-4906-8309"},
-        {no:51, name:"최혁만", phone:"010-3810-1015"},{no:52, name:"홍진찬", phone:"010-7535-2301"},{no:53, name:"황윤기", phone:"010-4531-3178"}
-    ];
-    const members = MEMBERS_RAW.map(m => ({ id: m.no, name: m.name, phone: m.phone || "없음" }));
+"use strict";
+/* ========== 명단 ========== */
+const MEMBERS_RAW=[
+{no:1,name:"공태영",phone:"010-4242-0731"},{no:2,name:"권대원",phone:"010-6525-7334"},{no:3,name:"김대훈",phone:"010-8824-7747"},{no:4,name:"김상현",phone:"010-2905-5652"},{no:5,name:"김상훈",phone:"010-4875-4267"},
+{no:6,name:"김성웅",phone:"010-4095-0787"},{no:7,name:"김성훈",phone:"010-7753-5995"},{no:8,name:"김용식",phone:"010-3818-5376"},{no:9,name:"김윤철",phone:"010-3512-7048"},{no:10,name:"김주태",phone:"010-4141-6837"},
+{no:11,name:"김진해",phone:"010-3804-8477"},{no:12,name:"김태하",phone:"010-6528-3121"},{no:13,name:"김태훈",phone:"010-3253-0224"},{no:14,name:"김학동",phone:"010-4514-8754"},{no:15,name:"노영중",phone:"010-7222-7518"},
+{no:16,name:"노태기",phone:"010-5531-0373"},{no:17,name:"류형종",phone:"010-3532-1475"},{no:18,name:"박근호",phone:"010-2529-0352"},{no:19,name:"박정휘",phone:"010-2653-4160"},{no:20,name:"박진욱",phone:"010-4524-2644"},
+{no:21,name:"박효진",phone:"010-3907-4311"},{no:22,name:"배종섭",phone:"010-8948-6589"},{no:23,name:"배한용",phone:"010-8568-3156"},{no:24,name:"서준석",phone:"010-8583-7956"},{no:25,name:"석상용",phone:"010-2443-7434"},
+{no:26,name:"소재환",phone:"010-3300-3893"},{no:27,name:"양기주",phone:"010-7272-3892"},{no:28,name:"유창우",phone:"010-9522-6362"},{no:29,name:"윤용원",phone:"010-3334-3714"},{no:30,name:"윤준호",phone:"010-8609-7154"},
+{no:31,name:"윤희삼",phone:"010-3095-7596"},{no:32,name:"이광희",phone:"010-8332-0020"},{no:33,name:"이병주",phone:"010-4515-2544"},{no:34,name:"이상찬",phone:"010-4523-3694"},{no:35,name:"이영찬",phone:"010-5183-2005"},
+{no:36,name:"이정섭",phone:"010-9309-9802"},{no:37,name:"이종경",phone:"010-2922-1783"},{no:38,name:"장정훈",phone:"010-3495-3792"},{no:39,name:"전상규",phone:"010-5166-1132"},{no:40,name:"전익성",phone:"010-2816-1193"},
+{no:41,name:"전해석",phone:"010-5144-1144"},{no:42,name:"전 헌",phone:"010-4431-5153"},{no:43,name:"정일영",phone:"010-9181-5102"},{no:44,name:"정창훈",phone:"010-6590-5544"},{no:45,name:"정호직",phone:"010-3454-9631"},
+{no:46,name:"조성헌",phone:"010-3652-7620"},{no:47,name:"지남고",phone:"010-4599-4479"},{no:48,name:"채재윤",phone:"010-2550-2315"},{no:49,name:"최민수",phone:"010-7942-7585"},{no:50,name:"최정해",phone:"010-4906-8309"},
+{no:51,name:"최혁만",phone:"010-3810-1015"},{no:52,name:"홍진찬",phone:"010-7535-2301"},{no:53,name:"황윤기",phone:"010-4531-3178"}
+];
+const members=MEMBERS_RAW.map(m=>({id:m.no,name:m.name,phone:m.phone||""}));
 
-    // 데이터 구조: 각 모임 { id, name, feeAmount, place1, mealCost1, place2, mealCost2, membersStatus: [{ attend1, feePaid, etc, attend2 }] }
-    let meetings = [];
-    let currentMeetingId = null;
-    let currentMeetingObj = null;
+/* ========== 상태 ========== */
+const STORAGE_KEY="Daegeon_Meeting_Manager_V3";   // 기존 데이터 그대로 사용
+const THEME_KEY="Daegeon_Meeting_Theme";
+let meetings=[], cur=null, saveTimer=null;
+const filter={q:"",mode:"all"};
 
-    function generateEmptyStatus() {
-        return members.map(() => ({ attend1: false, feePaid: false, etc: "", attend2: false }));
-    }
+const $=id=>document.getElementById(id);
+const won=n=>(Number(n)||0).toLocaleString("ko-KR")+"원";
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-    const STORAGE_KEY = "Daegeon_Meeting_Manager_V3";
+function emptyStatus(){return members.map(()=>({attend1:false,attend2:false,feePaid:false,etc:""}));}
 
-    function saveToLocalStorage() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(meetings));
-    }
+/* ========== 저장 ========== */
+function writeNow(){
+  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(meetings)); }
+  catch(e){ toast("저장 실패: 저장공간 부족"); return; }
+  $("saveFlag").classList.remove("dirty");
+  const d=new Date();
+  $("saveText").textContent="저장됨 "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+function save(){
+  $("saveFlag").classList.add("dirty");
+  $("saveText").textContent="저장 중…";
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(writeNow,450);
+}
 
-    // 마이그레이션 (이전 버전 호환)
-    function migrateV2toV3(oldData) {
-        if (!Array.isArray(oldData)) return null;
-        return oldData.map(meet => {
-            const oldStatus = meet.membersStatus || [];
-            const newStatus = members.map((_, idx) => {
-                const old = oldStatus[idx] || {};
-                return {
-                    attend1: !!old.attend1,
-                    attend2: !!old.attend2,
-                    feePaid: !!old.feePaid,
-                    etc: old.etc || ""
-                };
-            });
-            return {
-                id: meet.id,
-                name: meet.name,
-                feeAmount: meet.feeAmount || 30000,
-                place1: meet.place1 || "",
-                mealCost1: meet.mealCost1 || 0,
-                place2: meet.place2 || "",
-                mealCost2: meet.mealCost2 || 0,
-                membersStatus: newStatus
-            };
-        });
-    }
+function normalize(list){
+  if(!Array.isArray(list))return null;
+  return list.map((m,i)=>{
+    const old=Array.isArray(m.membersStatus)?m.membersStatus:[];
+    const st=members.map((_,idx)=>{
+      const o=old[idx]||{};
+      return{attend1:!!o.attend1,attend2:!!o.attend2,feePaid:!!o.feePaid,etc:o.etc||""};
+    });
+    return{
+      id:m.id||("meet_"+Date.now()+"_"+i),
+      name:m.name||("모임 "+(i+1)),
+      feeAmount:Number(m.feeAmount)||30000,
+      place1:m.place1||"", mealCost1:Number(m.mealCost1)||0,
+      place2:m.place2||"", mealCost2:Number(m.mealCost2)||0,
+      notes:m.notes||"", notesAt:m.notesAt||"",
+      membersStatus:st
+    };
+  });
+}
+function defaults(){
+  const now=new Date(), y=now.getFullYear(), mo=now.getMonth();
+  const nx=Math.floor(mo/2)*2+2;
+  const n2=nx+2>12?(y+1)+"년 "+(nx+2-12)+"월 정기모임":y+"년 "+(nx+2)+"월 정기모임";
+  return normalize([
+    {id:"meet_1",name:y+"년 "+nx+"월 정기모임"},
+    {id:"meet_2",name:n2}
+  ]);
+}
+function load(){
+  let raw=localStorage.getItem(STORAGE_KEY)||localStorage.getItem("Daegeon_Meeting_Manager_V2");
+  let parsed=null;
+  if(raw){ try{ parsed=JSON.parse(raw); }catch(e){ parsed=null; } }
+  meetings=normalize(parsed);
+  if(!meetings||!meetings.length) meetings=defaults();
+  writeNow();
+}
 
-    function loadFromLocalStorage() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-            try {
-                const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed) && parsed.length && parsed[0].membersStatus && 'attend1' in parsed[0].membersStatus[0]) {
-                    meetings = parsed;
-                } else {
-                    meetings = migrateV2toV3(parsed) || getDefaultMeetings();
-                }
-            } catch(e) { meetings = getDefaultMeetings(); }
-        } else {
-            // 구버전 키 확인 (V2)
-            const oldRaw = localStorage.getItem("Daegeon_Meeting_Manager_V2");
-            if (oldRaw) {
-                const oldData = JSON.parse(oldRaw);
-                meetings = migrateV2toV3(oldData) || getDefaultMeetings();
-            } else {
-                meetings = getDefaultMeetings();
-            }
-        }
-        // 길이 보정
-        meetings.forEach(meet => {
-            if (!meet.membersStatus || meet.membersStatus.length !== members.length)
-                meet.membersStatus = generateEmptyStatus();
-            if (meet.feeAmount === undefined) meet.feeAmount = 30000;
-            if (meet.place1 === undefined) meet.place1 = "";
-            if (meet.mealCost1 === undefined) meet.mealCost1 = 0;
-            if (meet.place2 === undefined) meet.place2 = "";
-            if (meet.mealCost2 === undefined) meet.mealCost2 = 0;
-        });
-        saveToLocalStorage();
-    }
+/* ========== 렌더 ========== */
+function matches(i){
+  const st=cur.membersStatus[i], m=members[i];
+  const f=filter.mode;
+  if(f==="a1"&&!st.attend1)return false;
+  if(f==="x1"&&st.attend1)return false;
+  if(f==="a2"&&!st.attend2)return false;
+  if(f==="unpaid"&&st.feePaid)return false;
+  if(f==="memo"&&!(st.etc||"").trim())return false;
+  const q=filter.q.trim().toLowerCase();
+  if(!q)return true;
+  const qd=q.replace(/\D/g,"");
+  const hay=(m.name+" "+m.name.replace(/\s/g,"")+" "+(st.etc||"")).toLowerCase();
+  if(hay.includes(q))return true;
+  if(qd&&m.phone.replace(/\D/g,"").includes(qd))return true;
+  return false;
+}
 
-    function getDefaultMeetings() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const nextEven = (Math.floor(month/2)*2) + 2;
-        let m1 = `${year}년 ${nextEven}월 정기모임`;
-        let m2 = `${year}년 ${nextEven+2}월 정기모임`;
-        if(nextEven+2 > 12) m2 = `${year+1}년 ${(nextEven+2)-12}월 정기모임`;
-        return [
-            { id: "meet_1", name: m1, feeAmount: 30000, place1: "", mealCost1: 0, place2: "", mealCost2: 0, membersStatus: generateEmptyStatus() },
-            { id: "meet_2", name: m2, feeAmount: 30000, place1: "", mealCost1: 0, place2: "", mealCost2: 0, membersStatus: generateEmptyStatus() }
-        ];
-    }
+function renderTable(){
+  const body=$("tableBody");
+  if(!cur){ body.innerHTML='<tr><td colspan="7" class="empty">모임을 선택하세요</td></tr>'; return; }
+  let html="", shown=0;
+  members.forEach((m,i)=>{
+    if(!matches(i))return;
+    shown++;
+    const st=cur.membersStatus[i];
+    const tel=m.phone?'<a class="ph" href="tel:'+m.phone.replace(/-/g,"")+'">'+esc(m.phone)+'</a>':'<span class="ph none">미등록</span>';
+    html+='<tr class="'+(st.attend1?"att":"")+'" data-row="'+i+'">'
+      + '<td class="num">'+m.id+'</td>'
+      + '<td class="mhead"><span class="nm">'+esc(m.name)+'</span>'+tel+'</td>'
+      + '<td class="hideM">'+tel+'</td>'
+      + '<td class="c mrow" data-l="1차"><input type="checkbox" data-k="attend1" data-i="'+i+'"'+(st.attend1?" checked":"")+'></td>'
+      + '<td class="c mrow" data-l="2차"><input type="checkbox" data-k="attend2" data-i="'+i+'"'+(st.attend2?" checked":"")+'></td>'
+      + '<td class="c mrow" data-l="회비"><input type="checkbox" class="fee" data-k="feePaid" data-i="'+i+'"'+(st.feePaid?" checked":"")+'></td>'
+      + '<td class="mmemo" data-l="메모"><input type="text" class="memo-in" data-k="etc" data-i="'+i+'" value="'+esc(st.etc)+'" placeholder="메모"></td>'
+      + '</tr>';
+  });
+  body.innerHTML=html||'<tr><td colspan="7" class="empty">조건에 맞는 회원이 없습니다</td></tr>';
+  $("visCount").textContent=(filter.q||filter.mode!=="all")?("표시 "+shown+"명 / 전체 "+members.length+"명"):("전체 "+members.length+"명");
+}
+function stats(){
+  if(!cur)return;
+  const L=cur.membersStatus;
+  const a1=L.filter(s=>s.attend1).length, a2=L.filter(s=>s.attend2).length, pd=L.filter(s=>s.feePaid).length;
+  const fee=Number(cur.feeAmount)||0, N=members.length;
+  const income=pd*fee, c1=Number(cur.mealCost1)||0, c2=Number(cur.mealCost2)||0, cost=c1+c2;
+  const bal=income-cost;
+  const unpaid1=L.filter(s=>s.attend1&&!s.feePaid).length;
 
-    // UI 렌더링 (테이블 + 장소/식대)
-    function renderTable() {
-        if (!currentMeetingObj) {
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="7">모임을 선택하세요</td></tr>';
-            return;
-        }
-        const statusList = currentMeetingObj.membersStatus;
-        document.getElementById('feeAmountInput').value = currentMeetingObj.feeAmount;
-        // 장소/식대 필드 값 설정
-        document.getElementById('place1').value = currentMeetingObj.place1 || "";
-        document.getElementById('mealCost1').value = currentMeetingObj.mealCost1 || 0;
-        document.getElementById('place2').value = currentMeetingObj.place2 || "";
-        document.getElementById('mealCost2').value = currentMeetingObj.mealCost2 || 0;
-        
-        let html = '';
-        members.forEach((member, idx) => {
-            const st = statusList[idx] || { attend1: false, feePaid: false, etc: "", attend2: false };
-            html += `<tr>
-                        <td style="text-align:center">${member.id}</td>
-                        <td class="member-name">${member.name}</td>
-                        <td class="phone">${member.phone}</td>
-                        <td class="checkbox-cell"><input type="checkbox" class="attend1-cb" data-idx="${idx}" ${st.attend1 ? 'checked' : ''}></td>
-                        <td class="checkbox-cell"><input type="checkbox" class="fee-cb" data-idx="${idx}" ${st.feePaid ? 'checked' : ''}></td>
-                        <td><input type="text" class="etc-input" data-idx="${idx}" value="${escapeHtml(st.etc || '')}" placeholder="메모"></td>
-                        <td class="checkbox-cell"><input type="checkbox" class="attend2-cb" data-idx="${idx}" ${st.attend2 ? 'checked' : ''}></td>
-                      </tr>`;
-        });
-        document.getElementById('tableBody').innerHTML = html;
-        attachTableEvents();
-        updateStatistics();
-    }
+  $("k1").textContent=a1; $("k2").textContent=a2; $("kp").textContent=pd;
+  $("kf").textContent=income.toLocaleString("ko-KR");
+  $("b1").style.width=(a1/N*100)+"%"; $("b2").style.width=(a2/N*100)+"%";
+  $("bp").style.width=(pd/N*100)+"%";
+  $("bf").style.width=(cost>0?Math.min(100,income/cost*100):(income>0?100:0))+"%";
+  $("f1").textContent=a1; $("f2").textContent=a2; $("fp").textContent=pd;
+  document.querySelectorAll(".totN").forEach(e=>e.textContent=N);
 
-    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); }
+  $("sIncome").textContent=won(income);
+  $("sCost").textContent=won(cost);
+  $("sBal").textContent=(bal<0?"−":"")+won(Math.abs(bal));
+  $("sBalLabel").textContent=bal<0?"부족액 (적자)":"잔액";
+  $("sBalWrap").classList.toggle("neg",bal<0);
+  $("sPer1").textContent=a1?won(Math.round(c1/a1)):"—";
+  $("sPer2").textContent=a2?won(Math.round(c2/a2)):"—";
+  $("sUnpaid").textContent=unpaid1+"명"+(unpaid1?" · "+won(unpaid1*fee):"");
 
-    function attachTableEvents() {
-        document.querySelectorAll('.attend1-cb').forEach(cb => cb.addEventListener('change', (e) => {
-            let idx = parseInt(e.target.dataset.idx);
-            if (currentMeetingObj?.membersStatus[idx]) currentMeetingObj.membersStatus[idx].attend1 = e.target.checked;
-            updateStatistics();
-        }));
-        document.querySelectorAll('.attend2-cb').forEach(cb => cb.addEventListener('change', (e) => {
-            let idx = parseInt(e.target.dataset.idx);
-            if (currentMeetingObj?.membersStatus[idx]) currentMeetingObj.membersStatus[idx].attend2 = e.target.checked;
-            updateStatistics();
-        }));
-        document.querySelectorAll('.fee-cb').forEach(cb => cb.addEventListener('change', (e) => {
-            let idx = parseInt(e.target.dataset.idx);
-            if (currentMeetingObj?.membersStatus[idx]) currentMeetingObj.membersStatus[idx].feePaid = e.target.checked;
-            updateStatistics();
-        }));
-        document.querySelectorAll('.etc-input').forEach(inp => inp.addEventListener('change', (e) => {
-            let idx = parseInt(e.target.dataset.idx);
-            if (currentMeetingObj?.membersStatus[idx]) currentMeetingObj.membersStatus[idx].etc = e.target.value;
-        }));
-    }
+  const parts=[];
+  parts.push("걷은 회비 = 납부 "+pd+"명 × "+won(fee));
+  if(unpaid1){
+    const after=bal+unpaid1*fee;
+    parts.push("1차 참석자 중 "+unpaid1+"명 미납("+won(unpaid1*fee)+") → 모두 걷으면 "
+      +(after<0?won(Math.abs(after))+" 부족":"잔액 "+won(after)));
+  }
+  if(cost>0&&a1) parts.push("1차 참석자 기준 1인 실부담 "+won(Math.round(cost/a1)));
+  $("sNote").innerHTML=parts.map(p=>"· "+esc(p)).join("<br>");
+}
 
-    function updateStatistics() {
-        if (!currentMeetingObj) return;
-        const list = currentMeetingObj.membersStatus;
-        const attend1 = list.filter(s=>s.attend1).length;
-        const attend2 = list.filter(s=>s.attend2).length;
-        const paid = list.filter(s=>s.feePaid).length;
-        const feeAmt = currentMeetingObj.feeAmount || 30000;
-        const totalFee = paid * feeAmt;
-        const meal1 = currentMeetingObj.mealCost1 || 0;
-        const meal2 = currentMeetingObj.mealCost2 || 0;
-        document.getElementById('attend1Count').innerText = attend1;
-        document.getElementById('attend2Count').innerText = attend2;
-        document.getElementById('paidCount').innerText = paid;
-        document.getElementById('totalFeeSum').innerText = totalFee.toLocaleString();
-        document.getElementById('totalMemberCount').innerText = members.length;
-        document.getElementById('displayMeal1').innerText = meal1.toLocaleString();
-        document.getElementById('displayMeal2').innerText = meal2.toLocaleString();
-    }
+function fillFields(){
+  if(!cur)return;
+  $("feeAmountInput").value=cur.feeAmount;
+  $("place1").value=cur.place1; $("mealCost1").value=cur.mealCost1||"";
+  $("place2").value=cur.place2; $("mealCost2").value=cur.mealCost2||"";
+  $("notes").value=cur.notes||"";
+  autoGrow(); notesMeta();
+}
+function fillSelect(){
+  const s=$("meetingSelect"); s.innerHTML="";
+  meetings.forEach(m=>{
+    const o=document.createElement("option");
+    o.value=m.id; o.textContent=m.name+"  ·  회비 "+(Number(m.feeAmount)||0).toLocaleString("ko-KR")+"원";
+    if(cur&&cur.id===m.id)o.selected=true;
+    s.appendChild(o);
+  });
+}
+function openMeeting(id){
+  const f=meetings.find(m=>m.id===id)||meetings[0];
+  cur=f; fillSelect(); fillFields(); renderTable(); stats();
+}
 
-    function updateMeetingSelect() {
-        const select = document.getElementById('meetingSelect');
-        select.innerHTML = '';
-        meetings.forEach(meet => {
-            let option = document.createElement('option');
-            option.value = meet.id;
-            option.textContent = `${meet.name} (회비 ${meet.feeAmount?.toLocaleString()}원)`;
-            if (currentMeetingId === meet.id) option.selected = true;
-            select.appendChild(option);
-        });
-    }
+/* ========== 메모 ========== */
+function autoGrow(){
+  const t=$("notes"); t.style.height="auto";
+  t.style.height=Math.max(150,t.scrollHeight+2)+"px";
+}
+function notesMeta(){
+  const n=($("notes").value||"");
+  $("notesCount").textContent=n.length.toLocaleString("ko-KR")+"자";
+  $("notesStamp").textContent=cur&&cur.notesAt?("최종 수정 "+cur.notesAt):"";
+}
+function stamp(){
+  const d=new Date();
+  return d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0")
+    +" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
 
-    function loadMeetingById(meetingId) {
-        let found = meetings.find(m => m.id === meetingId);
-        if (found) {
-            currentMeetingId = found.id;
-            currentMeetingObj = found;
-            renderTable();
-            updateMeetingSelect();
-        } else if (meetings.length) {
-            currentMeetingId = meetings[0].id;
-            currentMeetingObj = meetings[0];
-            renderTable();
-            updateMeetingSelect();
-        }
-    }
+/* ========== 토스트 ========== */
+let toastT=null;
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2100);
+}
 
-    function syncUIToMeeting() {
-        if (!currentMeetingObj) return;
-        // 테이블 데이터 동기화
-        for (let i=0; i<members.length; i++) {
-            let attend1Cb = document.querySelector(`.attend1-cb[data-idx="${i}"]`);
-            let attend2Cb = document.querySelector(`.attend2-cb[data-idx="${i}"]`);
-            let feeCb = document.querySelector(`.fee-cb[data-idx="${i}"]`);
-            let etcInp = document.querySelector(`.etc-input[data-idx="${i}"]`);
-            if (attend1Cb) currentMeetingObj.membersStatus[i].attend1 = attend1Cb.checked;
-            if (attend2Cb) currentMeetingObj.membersStatus[i].attend2 = attend2Cb.checked;
-            if (feeCb) currentMeetingObj.membersStatus[i].feePaid = feeCb.checked;
-            if (etcInp) currentMeetingObj.membersStatus[i].etc = etcInp.value;
-        }
-        // 회비 금액
-        let newFee = parseInt(document.getElementById('feeAmountInput').value);
-        if (!isNaN(newFee) && newFee>0) currentMeetingObj.feeAmount = newFee;
-        // 장소/식대
-        currentMeetingObj.place1 = document.getElementById('place1').value;
-        currentMeetingObj.mealCost1 = parseInt(document.getElementById('mealCost1').value) || 0;
-        currentMeetingObj.place2 = document.getElementById('place2').value;
-        currentMeetingObj.mealCost2 = parseInt(document.getElementById('mealCost2').value) || 0;
-    }
+/* ========== 테마 ========== */
+function setTheme(t,announce){
+  document.documentElement.setAttribute("data-theme",t);
+  document.querySelector('meta[name=theme-color]').setAttribute("content",t==="dark"?"#080c0a":"#0f4d33");
+  try{localStorage.setItem(THEME_KEY,t);}catch(e){}
+  if(announce)toast(t==="dark"?"다크 모드":"라이트 모드");
+}
+(function initTheme(){
+  let t=null; try{t=localStorage.getItem(THEME_KEY);}catch(e){}
+  if(!t)t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+  setTheme(t,false);
+})();
 
-    function saveCurrentMeeting() {
-        if (!currentMeetingObj) { alert("저장할 모임 없음"); return; }
-        syncUIToMeeting();
-        let idx = meetings.findIndex(m => m.id === currentMeetingObj.id);
-        if (idx !== -1) meetings[idx] = currentMeetingObj;
-        else meetings.push(currentMeetingObj);
-        saveToLocalStorage();
-        updateMeetingSelect();
-        updateStatistics();
-        alert(`"${currentMeetingObj.name}" 저장 완료`);
-    }
+/* ========== 내보내기 ========== */
+function download(name,content,type){
+  const blob=new Blob([content],{type:type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportCSV(){
+  if(!cur)return;
+  const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows=[["번호","이름","연락처","1차참석","2차참석","회비납부","메모"]];
+  members.forEach((m,i)=>{
+    const s=cur.membersStatus[i];
+    rows.push([m.id,m.name,m.phone||"미등록",s.attend1?"참석":"불참",s.attend2?"참석":"불참",s.feePaid?"납부":"미납",s.etc||""]);
+  });
+  const L=cur.membersStatus;
+  const a1=L.filter(s=>s.attend1).length,a2=L.filter(s=>s.attend2).length,pd=L.filter(s=>s.feePaid).length;
+  const inc=pd*(Number(cur.feeAmount)||0), cost=(Number(cur.mealCost1)||0)+(Number(cur.mealCost2)||0);
+  rows.push([]);rows.push(["[모임 정보]"]);
+  rows.push(["모임명",cur.name]);
+  rows.push(["1인 회비",cur.feeAmount]);
+  rows.push(["1차 장소",cur.place1,"1차 식대",cur.mealCost1]);
+  rows.push(["2차 장소",cur.place2,"2차 식대",cur.mealCost2]);
+  rows.push(["1차 참석",a1,"2차 참석",a2,"회비 납부",pd]);
+  rows.push(["걷은 회비",inc,"총 식대",cost,"잔액",inc-cost]);
+  rows.push([]);rows.push(["[당일 중점 기록]"]);rows.push([cur.notes||""]);
+  download(cur.name+"_현황.csv","﻿"+rows.map(r=>r.map(q).join(",")).join("\r\n"),"text/csv;charset=utf-8;");
+  toast("CSV를 내려받았습니다");
+}
 
-    function createNewMeeting() {
-        let name = prompt("모임 이름", `${new Date().getFullYear()}년 ${new Date().getMonth()+2}월 정기모임`);
-        if (!name) name = `새 모임 ${Date.now()}`;
-        let fee = parseInt(document.getElementById('feeAmountInput').value) || 30000;
-        let newId = "meet_" + Date.now();
-        let newMeeting = {
-            id: newId, name, feeAmount: fee,
-            place1: "", mealCost1: 0, place2: "", mealCost2: 0,
-            membersStatus: generateEmptyStatus()
-        };
-        meetings.push(newMeeting);
-        saveToLocalStorage();
-        currentMeetingId = newId;
-        currentMeetingObj = newMeeting;
-        renderTable();
-        updateMeetingSelect();
-        alert(`생성됨: ${name}`);
-    }
+/* ========== 이벤트 ========== */
+document.addEventListener("DOMContentLoaded",()=>{},{once:true});
 
-    function deleteCurrentMeeting() {
-        if (!currentMeetingObj || meetings.length <= 1) { alert("최소 1개 모임 필요"); return; }
-        if (confirm(`"${currentMeetingObj.name}" 삭제?`)) {
-            meetings = meetings.filter(m => m.id !== currentMeetingObj.id);
-            saveToLocalStorage();
-            currentMeetingId = meetings[0].id;
-            currentMeetingObj = meetings[0];
-            renderTable();
-            updateMeetingSelect();
-        }
-    }
+// 표 입력 (위임)
+$("tableBody").addEventListener("change",e=>{
+  const el=e.target, i=el.dataset.i, k=el.dataset.k;
+  if(i===undefined||!k)return;
+  const st=cur.membersStatus[+i];
+  if(el.type==="checkbox"){
+    st[k]=el.checked;
+    if(k==="attend1")el.closest("tr").classList.toggle("att",el.checked);
+    stats();
+  }else{ st[k]=el.value; }
+  save();
+});
+$("tableBody").addEventListener("input",e=>{
+  if(e.target.dataset.k==="etc"){ cur.membersStatus[+e.target.dataset.i].etc=e.target.value; save(); }
+});
+// 체크박스 칸 어디를 눌러도 토글 (특히 모바일)
+$("tableBody").addEventListener("click",e=>{
+  const cell=e.target.closest("td.mrow"); if(!cell)return;
+  const cb=cell.querySelector('input[type=checkbox]');
+  if(!cb||e.target===cb)return;
+  cb.checked=!cb.checked;
+  cb.dispatchEvent(new Event("change",{bubbles:true}));
+});
 
-    function copyFromPrevious() {
-        if (!currentMeetingObj || meetings.length < 2) { alert("이전 모임이 없습니다"); return; }
-        let prev = [...meetings].reverse().find(m => m.id !== currentMeetingObj.id);
-        if (!prev) return;
-        if (confirm(`"${prev.name}" 의 모든 정보(참석/회비/메모/장소/식대)를 현재 모임에 복사하시겠습니까?`)) {
-            currentMeetingObj.membersStatus = JSON.parse(JSON.stringify(prev.membersStatus));
-            currentMeetingObj.place1 = prev.place1 || "";
-            currentMeetingObj.mealCost1 = prev.mealCost1 || 0;
-            currentMeetingObj.place2 = prev.place2 || "";
-            currentMeetingObj.mealCost2 = prev.mealCost2 || 0;
-            renderTable();
-            saveCurrentMeeting();
-            alert("복사 완료 (자동 저장됨)");
-        }
-    }
+// 검색 / 필터
+$("searchInput").addEventListener("input",e=>{filter.q=e.target.value;renderTable();});
+$("filterChips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b)return;
+  filter.mode=b.dataset.f;
+  document.querySelectorAll("#filterChips .chip").forEach(c=>c.classList.toggle("on",c===b));
+  renderTable();
+});
 
-    function markAllAttend1(val) { if(currentMeetingObj) { currentMeetingObj.membersStatus.forEach(s=>s.attend1=val); renderTable(); } }
-    function markAllAttend2(val) { if(currentMeetingObj) { currentMeetingObj.membersStatus.forEach(s=>s.attend2=val); renderTable(); } }
-    function markAllPaid(val) { if(currentMeetingObj) { currentMeetingObj.membersStatus.forEach(s=>s.feePaid=val); renderTable(); } }
+// 일괄 처리 (표시된 인원만)
+document.querySelector(".bulk-body").addEventListener("click",e=>{
+  const b=e.target.closest("[data-bulk]"); if(!b||!cur)return;
+  const idxs=members.map((_,i)=>i).filter(matches);
+  if(!idxs.length){toast("적용할 대상이 없습니다");return;}
+  const cmd=b.dataset.bulk;
+  if(cmd==="sync2"){ idxs.forEach(i=>cur.membersStatus[i].attend2=cur.membersStatus[i].attend1); }
+  else{ const [k,v]=cmd.split(":");
+    const key=k==="a1"?"attend1":k==="a2"?"attend2":"feePaid";
+    idxs.forEach(i=>cur.membersStatus[i][key]=(v==="1"));
+  }
+  renderTable(); stats(); save();
+  toast(idxs.length+"명에게 적용했습니다");
+});
 
-    function exportToCSV() {
-        if (!currentMeetingObj) return;
-        syncUIToMeeting();
-        let rows = [["번호","이름","연락처","1차참석","회비납부","기타메모","2차참석"]];
-        members.forEach((m, idx) => {
-            let st = currentMeetingObj.membersStatus[idx];
-            rows.push([
-                m.id, m.name, m.phone,
-                st.attend1 ? "참석" : "불참",
-                st.feePaid ? "납부" : "미납",
-                st.etc || "",
-                st.attend2 ? "참석" : "불참"
-            ]);
-        });
-        // 추가로 모임 정보 행 삽입
-        rows.push(["","[모임정보]","","","","",""]);
-        rows.push(["1차 장소", currentMeetingObj.place1 || "", "1차 식대", currentMeetingObj.mealCost1 || 0, "2차 장소", currentMeetingObj.place2 || "", "2차 식대", currentMeetingObj.mealCost2 || 0]);
-        let csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-        let blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8;"});
-        let link = document.createElement("a");
-        let url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = `${currentMeetingObj.name}_전체현황.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
+// 모임 정보 입력
+["place1","place2"].forEach(id=>$(id).addEventListener("input",e=>{cur[id]=e.target.value;save();}));
+["mealCost1","mealCost2"].forEach(id=>$(id).addEventListener("input",e=>{cur[id]=parseInt(e.target.value,10)||0;stats();save();}));
+$("feeAmountInput").addEventListener("input",e=>{
+  const v=parseInt(e.target.value,10); cur.feeAmount=isNaN(v)||v<0?0:v;
+  stats();fillSelect();save();
+});
 
-    // 이벤트 등록
-    function init() {
-        loadFromLocalStorage();
-        if (!meetings.length) meetings = getDefaultMeetings();
-        currentMeetingId = meetings[0].id;
-        currentMeetingObj = meetings[0];
-        renderTable();
-        updateMeetingSelect();
+// 메모
+$("notes").addEventListener("input",e=>{
+  cur.notes=e.target.value; cur.notesAt=stamp();
+  autoGrow(); notesMeta(); save();
+});
+$("tplBtn").onclick=()=>{
+  const t=$("notes");
+  const tpl="■ 안건\n- \n\n■ 결정사항\n- \n\n■ 전달 / 공지\n- \n\n■ 다음 모임 준비\n- 일시:\n- 장소:\n- 담당:\n";
+  t.value=(t.value.trim()?t.value.replace(/\s+$/,"")+"\n\n":"")+tpl;
+  cur.notes=t.value; cur.notesAt=stamp(); autoGrow(); notesMeta(); save(); t.focus();
+};
+$("copyNotesBtn").onclick=async()=>{
+  const v=$("notes").value;
+  if(!v.trim()){toast("복사할 메모가 없습니다");return;}
+  try{ await navigator.clipboard.writeText(cur.name+"\n\n"+v); toast("메모를 복사했습니다"); }
+  catch(e){ $("notes").select(); toast("복사 권한이 없어 선택만 했습니다"); }
+};
 
-        document.getElementById('loadMeetingBtn').onclick = () => {
-            let selId = document.getElementById('meetingSelect').value;
-            let found = meetings.find(m => m.id === selId);
-            if (found) { currentMeetingId = found.id; currentMeetingObj = found; renderTable(); updateMeetingSelect(); }
-        };
-        document.getElementById('saveMeetingBtn').onclick = saveCurrentMeeting;
-        document.getElementById('newMeetingBtn').onclick = createNewMeeting;
-        document.getElementById('deleteMeetingBtn').onclick = deleteCurrentMeeting;
-        document.getElementById('copyPrevBtn').onclick = copyFromPrevious;
-        document.getElementById('markAllAttend1Btn').onclick = () => markAllAttend1(true);
-        document.getElementById('clearAllAttend1Btn').onclick = () => markAllAttend1(false);
-        document.getElementById('markAllAttend2Btn').onclick = () => markAllAttend2(true);
-        document.getElementById('clearAllAttend2Btn').onclick = () => markAllAttend2(false);
-        document.getElementById('markAllPaidBtn').onclick = () => markAllPaid(true);
-        document.getElementById('clearAllPaidBtn').onclick = () => markAllPaid(false);
-        document.getElementById('exportCSVBtn').onclick = exportToCSV;
-        // 장소/식대 입력 변경시 통계 업데이트 및 자동 저장하지는 않음 (저장버튼 누를때 반영)
-        document.getElementById('mealCost1').addEventListener('change', () => { if(currentMeetingObj) updateStatistics(); });
-        document.getElementById('mealCost2').addEventListener('change', () => { if(currentMeetingObj) updateStatistics(); });
-        document.getElementById('feeAmountInput').addEventListener('change', () => { if(currentMeetingObj) updateStatistics(); });
-    }
-    init();
+// 모임 관리
+$("meetingSelect").addEventListener("change",e=>openMeeting(e.target.value));
+$("newMeetingBtn").onclick=()=>{
+  const d=new Date();
+  let mo=d.getMonth()+3, y=d.getFullYear();
+  if(mo>12){mo-=12;y++;}
+  const name=(prompt("새 모임 이름",y+"년 "+mo+"월 정기모임")||"").trim();
+  if(!name)return;
+  const nm=normalize([{id:"meet_"+Date.now(),name:name,feeAmount:Number($("feeAmountInput").value)||30000}])[0];
+  meetings.push(nm); cur=nm; fillSelect(); fillFields(); renderTable(); stats(); writeNow();
+  toast("생성됨: "+name);
+};
+$("renameBtn").onclick=()=>{
+  if(!cur)return;
+  const n=(prompt("모임 이름 변경",cur.name)||"").trim();
+  if(!n)return;
+  cur.name=n; fillSelect(); writeNow(); toast("이름을 변경했습니다");
+};
+$("deleteMeetingBtn").onclick=()=>{
+  if(!cur||meetings.length<=1){toast("최소 1개의 모임이 필요합니다");return;}
+  if(!confirm('"'+cur.name+'" 모임을 삭제할까요?\n참석·회비·메모 기록이 모두 사라집니다.'))return;
+  meetings=meetings.filter(m=>m.id!==cur.id);
+  openMeeting(meetings[0].id); writeNow(); toast("삭제했습니다");
+};
+$("copyPrevBtn").onclick=()=>{
+  if(!cur||meetings.length<2){toast("복사할 다른 모임이 없습니다");return;}
+  const idx=meetings.findIndex(m=>m.id===cur.id);
+  const prev=meetings[idx-1]||meetings.filter(m=>m.id!==cur.id).slice(-1)[0];
+  if(!prev)return;
+  if(!confirm('"'+prev.name+'"의 참석·회비·메모·장소·식대를 현재 모임으로 복사할까요?'))return;
+  const s=normalize([prev])[0];
+  cur.membersStatus=s.membersStatus; cur.place1=s.place1; cur.mealCost1=s.mealCost1;
+  cur.place2=s.place2; cur.mealCost2=s.mealCost2; cur.notes=s.notes; cur.notesAt=s.notesAt;
+  fillFields(); renderTable(); stats(); writeNow(); toast("복사 완료");
+};
+$("exportCSVBtn").onclick=exportCSV;
+$("backupBtn").onclick=()=>{
+  const d=new Date();
+  const f="대건고43_백업_"+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+".json";
+  download(f,JSON.stringify(meetings,null,2),"application/json");
+  toast("백업 파일을 내려받았습니다");
+};
+$("restoreBtn").onclick=()=>$("restoreFile").click();
+$("restoreFile").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const data=normalize(JSON.parse(r.result));
+      if(!data||!data.length)throw 0;
+      if(!confirm("백업 "+data.length+"개 모임으로 덮어씁니다. 현재 데이터는 사라집니다. 계속할까요?"))return;
+      meetings=data; openMeeting(meetings[0].id); writeNow(); toast("복원 완료");
+    }catch(err){ toast("백업 파일을 읽을 수 없습니다"); }
+    finally{ e.target.value=""; }
+  };
+  r.readAsText(f);
+});
+$("themeBtn").onclick=()=>setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark",true);
+// 입력 중에는 하단 요약 배지 숨김
+document.addEventListener("focusin",e=>{
+  if(e.target.matches("input[type=text],input[type=number],textarea"))document.body.classList.add("typing");
+});
+document.addEventListener("focusout",()=>document.body.classList.remove("typing"));
+window.addEventListener("beforeunload",()=>{clearTimeout(saveTimer);writeNow();});
+
+/* ========== 시작 ========== */
+load();
+openMeeting(meetings[0].id);
 </script>
 </body>
 </html>
